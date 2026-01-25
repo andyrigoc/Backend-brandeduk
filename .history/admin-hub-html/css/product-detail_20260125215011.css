@@ -1,0 +1,1019 @@
+/**
+ * Product Detail Page - DecoNetwork Style
+ */
+
+/* Product Detail Layout */
+.product-detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product-detail-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+.product-detail-breadcrumb a {
+    color: #0ea5e9;
+    text-decoration: none;
+}
+
+.product-detail-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.product-detail-breadcrumb .separator {
+    color: #9ca3af;
+}
+
+/* Top Bar with buttons */
+.product-detail-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.product-detail-topbar .buttons-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Main Layout: Left Menu + Content */
+.product-detail-main {
+    display: flex;
+    gap: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 600px;
+}
+
+/* Left Side: Image + Menu */
+.product-detail-left {
+    width: 280px;
+    min-width: 280px;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Product Image Preview */
+.product-image-preview {
+    position: relative;
+    padding: 20px;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.product-image-preview img {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.product-image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Properties Menu */
+.properties-menu {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.properties-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #374151;
+    text-decoration: none;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.properties-menu-item:hover {
+    background: #f9fafb;
+    color: #0ea5e9;
+}
+
+.properties-menu-item.active {
+    background: #eff6ff;
+    color: #0ea5e9;
+    border-left: 3px solid #0ea5e9;
+}
+
+.properties-menu-item i {
+    width: 20px;
+    margin-right: 10px;
+    opacity: 0.7;
+}
+
+/* Right Side: Content Area */
+.product-detail-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Section Header */
+.section-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafbfc;
+}
+
+.section-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.section-header .stats {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.section-header .stats span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.section-header a {
+    color: #0ea5e9;
+    text-decoration: none;
+}
+
+.section-header a:hover {
+    text-decoration: underline;
+}
+
+/* Section Body */
+.section-body {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* Two Column Form Layout */
+.form-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Form Groups */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #111827;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-group input:disabled {
+    background: #f9fafb;
+    color: #6b7280;
+}
+
+/* Checkbox in form */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #0ea5e9;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checkbox-group .help-icon {
+    color: #9ca3af;
+    cursor: help;
+}
+
+/* Brand Selector */
+.brand-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.brand-selector select {
+    flex: 1;
+}
+
+.brand-selector .manage-link {
+    color: #0ea5e9;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* Section Buttons */
+.section-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 20px 30px;
+    border-top: 1px solid #e5e7eb;
+    background: #fafbfc;
+}
+
+/* =====================================
+   COLORS PANEL
+===================================== */
+.colors-table-wrapper {
+    overflow-x: auto;
+}
+
+.colors-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.colors-table th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 500;
+    color: #6b7280;
+    background: #fafbfc;
+}
+
+.colors-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.colors-table tr:hover {
+    background: #f9fafb;
+}
+
+.color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    display: inline-block;
+}
+
+.color-name-cell {
+    font-weight: 500;
+    color: #111827;
+}
+
+/* Color Sort Order */
+.color-sort-setting {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.color-sort-setting label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.sort-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* =====================================
+   VIEWS & DECORATION AREAS PANEL
+===================================== */
+.decoration-process-section {
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.decoration-process-section h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #111827;
+}
+
+.decoration-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.decoration-processes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+    padding: 16px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.process-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151;
+    gap: 4px;
+}
+
+.process-badge i {
+    font-size: 18px;
+    color: #10b981;
+}
+
+.process-badge.inactive i {
+    color: #d1d5db;
+}
+
+/* Views List */
+.views-section {
+    margin-top: 24px;
+}
+
+.view-options {
+    display: flex;
+    gap: 20px;
+    padding: 16px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.view-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.view-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #fafbfc;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.view-card-header h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.view-card-body {
+    display: flex;
+    gap: 24px;
+    padding: 20px;
+}
+
+.view-image-container {
+    position: relative;
+    width: 200px;
+    min-width: 200px;
+}
+
+.view-image-container img {
+    width: 100%;
+    border-radius: 4px;
+}
+
+.decoration-area-overlay {
+    position: absolute;
+    border: 2px dashed #0ea5e9;
+    background: rgba(14, 165, 233, 0.1);
+    pointer-events: none;
+}
+
+/* Areas Table */
+.areas-table {
+    flex: 1;
+}
+
+.areas-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.areas-table th {
+    text-align: center;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 11px;
+}
+
+.areas-table td {
+    text-align: center;
+    padding: 10px 6px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.areas-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+    color: #111827;
+}
+
+.areas-table .check-icon {
+    color: #10b981;
+}
+
+.areas-table .sort-arrows {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.areas-table .sort-arrows button {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.areas-table .sort-arrows button:hover {
+    background: #0284c7;
+}
+
+/* ========================================
+   MANAGE BRANDS MODAL
+   ======================================== */
+.brands-modal-content {
+    max-width: 600px;
+}
+
+.brands-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.brand-row:hover {
+    background: #f9fafb;
+}
+
+.brand-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.brand-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.brand-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Add New Brand Form */
+.add-brand-form {
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.add-brand-form h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.add-brand-form .form-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.add-brand-form .form-group {
+    flex: 1;
+}
+
+/* ========================================
+   PRICING PANEL - DecoNetwork Style
+   ======================================== */
+.pricing-section {
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.pricing-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.pricing-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.pricing-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.pricing-section-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Contract Price Levels */
+.contract-price-levels {
+    display: flex;
+    gap: 24px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Radio Labels */
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+    padding: 6px 0;
+}
+
+.radio-label input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #0ea5e9;
+}
+
+/* Price Breakdown Card */
+.price-breakdown-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.price-breakdown-card h4 {
+    margin: 0 0 16px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Price Breakdown Table */
+.price-breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.price-breakdown-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.price-breakdown-table .label-cell {
+    color: #374151;
+    width: 200px;
+}
+
+.price-breakdown-table .link-cell {
+    width: 120px;
+}
+
+.price-breakdown-table .link-cell a {
+    color: #0ea5e9;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.price-breakdown-table .link-cell a:hover {
+    text-decoration: underline;
+}
+
+.price-breakdown-table .value-cell {
+    font-weight: 500;
+    color: #111827;
+}
+
+.price-breakdown-table .action-cell {
+    width: 40px;
+    text-align: center;
+}
+
+.price-breakdown-table .subtotal-row {
+    background: #f9fafb;
+}
+
+.price-breakdown-table .total-row {
+    background: #fef3c7;
+    font-weight: 600;
+}
+
+/* Decoration Prices Grid */
+.decoration-prices {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    text-align: center;
+}
+
+.decoration-prices .process-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* Config Wheel Button */
+.config-wheel {
+    background: none;
+    border: none;
+    color: #0ea5e9;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 16px;
+    transition: color 0.2s;
+}
+
+.config-wheel:hover {
+    color: #0284c7;
+}
+
+/* Store Pricing Section */
+.store-pricing-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.store-pricing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.store-pricing-header a {
+    color: #0ea5e9;
+    text-decoration: none;
+}
+
+.store-pricing-table {
+    background: #f0f9ff;
+}
+
+/* Info Box */
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #0369a1;
+}
+
+/* Bundle Sizes */
+.bundle-sizes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bundle-size-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.bundle-size-item input {
+    width: 100px;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+/* ========================================
+   MODAL STYLES
+   ======================================== */
+.modal-header-blue {
+    background: #0ea5e9;
+    color: white;
+}
+
+.modal-header-blue .modal-close {
+    color: white;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+/* SKU Cost Table */
+.sku-cost-table-wrapper {
+    overflow-x: auto;
+}
+
+.sku-cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.sku-cost-table th,
+.sku-cost-table td {
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.sku-cost-table th {
+    background: #f3f4f6;
+    font-weight: 500;
+}
+
+.sku-cost-table td:first-child {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.color-swatch-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid #d1d5db;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Pricing Options List */
+.pricing-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sub-options {
+    border-left: 2px solid #e5e7eb;
+    padding-left: 16px;
+}
+
+/* Breakdown Table */
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+    padding: 10px 8px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.breakdown-table th {
+    background: #f3f4f6;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.breakdown-table input {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 6px 8px;
+    text-align: center;
+}
+
+/* Decoration Pricing Table */
+.decoration-pricing-table,
+.advanced-decoration-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.decoration-pricing-table th,
+.decoration-pricing-table td,
+.advanced-decoration-table th,
+.advanced-decoration-table td {
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.decoration-pricing-table th,
+.advanced-decoration-table th {
+    background: #f3f4f6;
+    font-weight: 500;
+}
+
+.decoration-pricing-table input[type="number"],
+.advanced-decoration-table input[type="number"] {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* Button Cancel */
+.btn-cancel {
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.btn-cancel:hover {
+    background: #fef2f2;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+    .product-detail-main {
+        flex-direction: column;
+    }
+    
+    .product-detail-left {
+        width: 100%;
+        min-width: auto;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .product-image-preview {
+        padding: 16px;
+    }
+    
+    .properties-menu {
+        display: flex;
+        overflow-x: auto;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .properties-menu-item {
+        white-space: nowrap;
+        border-bottom: none;
+        border-right: 1px solid #f3f4f6;
+    }
+    
+    .properties-menu-item.active {
+        border-left: none;
+        border-bottom: 3px solid #0ea5e9;
+    }
+    
+    .form-columns {
+        grid-template-columns: 1fr;
+    }
+    
+    .view-card-body {
+        flex-direction: column;
+    }
+    
+    .view-image-container {
+        width: 100%;
+    }
+    
+    .decoration-prices {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .contract-price-levels {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

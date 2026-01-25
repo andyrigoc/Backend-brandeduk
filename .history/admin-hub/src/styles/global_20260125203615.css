@@ -1,0 +1,383 @@
+/* BrandedUK Admin Hub - Global Styles */
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #a0aec0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* Layout Overrides */
+.admin-layout {
+  min-height: 100vh;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-logo h1 {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #00838f 0%, #4fb3bf 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.header-search {
+  width: 400px;
+  max-width: 40%;
+}
+
+.header-search .ant-input-affix-wrapper {
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header-search .ant-input-affix-wrapper:hover,
+.header-search .ant-input-affix-wrapper:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.header-search .ant-input {
+  background: transparent;
+  color: white;
+}
+
+.header-search .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.header-search .anticon {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-actions .ant-badge .ant-btn {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header-actions .ant-badge .ant-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar Styling */
+.admin-sidebar {
+  overflow: auto;
+  height: calc(100vh - 64px);
+  position: sticky;
+  top: 64px;
+  left: 0;
+}
+
+.admin-sidebar .ant-menu {
+  border-right: none;
+}
+
+.sidebar-menu-section {
+  padding: 16px 24px 8px;
+  color: #718096;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Content Area */
+.admin-content {
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+}
+
+/* Breadcrumb */
+.admin-breadcrumb {
+  margin-bottom: 16px;
+}
+
+.admin-breadcrumb .ant-breadcrumb-link {
+  color: #3182ce;
+}
+
+.admin-breadcrumb .ant-breadcrumb-link:hover {
+  color: #2c5282;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+/* Dashboard Cards */
+.stats-card {
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.stats-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card .ant-card-body {
+  padding: 20px;
+}
+
+.stats-card-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a202c;
+  line-height: 1.2;
+}
+
+.stats-card-label {
+  font-size: 14px;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.stats-card-change {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.stats-card-change.positive {
+  color: #38a169;
+}
+
+.stats-card-change.negative {
+  color: #e53e3e;
+}
+
+/* Stats Table */
+.stats-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stats-table .ant-table-thead > tr > th {
+  background: #f7fafc;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.stats-table-highlight {
+  background: #fef3c7 !important;
+  font-weight: 600;
+}
+
+/* Period Tabs */
+.period-tabs {
+  margin-bottom: 0;
+}
+
+.period-tabs .ant-tabs-tab {
+  padding: 8px 16px;
+  margin: 0;
+}
+
+.period-tabs .ant-tabs-tab-active {
+  background: #1a365d;
+  border-radius: 4px;
+}
+
+.period-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: white !important;
+}
+
+/* Chart Container */
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.chart-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+/* Products Table */
+.products-table .ant-table-row {
+  cursor: pointer;
+}
+
+.products-table .ant-table-row:hover {
+  background: #edf2f7;
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #f7fafc;
+}
+
+.product-code-link {
+  color: #3182ce;
+  font-weight: 500;
+}
+
+.product-code-link:hover {
+  color: #2c5282;
+  text-decoration: underline;
+}
+
+/* Categories Sidebar */
+.categories-sidebar {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  height: fit-content;
+}
+
+.categories-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.categories-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.categories-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.category-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+}
+
+.category-item:hover {
+  background: #edf2f7;
+}
+
+.category-item.active {
+  background: #00838f;
+  color: white;
+}
+
+.category-item .count {
+  font-size: 12px;
+  color: #718096;
+}
+
+.category-item.active .count {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Bulk Actions Bar */
+.bulk-actions-bar {
+  background: #edf2f7;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bulk-actions-info {
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.bulk-actions-info strong {
+  color: #1a202c;
+}
+
+.bulk-actions-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}

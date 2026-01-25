@@ -1,0 +1,224 @@
+/* ========================================
+   Categories Page Styles
+   ======================================== */
+
+/* Categories Grid Layout */
+.categories-grid-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Category Cards Grid */
+.category-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+/* Category Card */
+.category-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 131, 143, 0.15);
+}
+
+.category-card.active {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(0, 131, 143, 0.05), rgba(0, 131, 143, 0.1));
+}
+
+.category-card-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.category-card-icon i {
+    font-size: 24px;
+    color: white;
+}
+
+.category-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.category-card-info h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-card-count {
+    display: block;
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.category-card-percentage {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.category-card-arrow {
+    color: var(--text-muted);
+    transition: transform 0.2s;
+}
+
+.category-card:hover .category-card-arrow {
+    color: var(--accent);
+    transform: translateX(4px);
+}
+
+/* Category Products Panel */
+.category-products-panel {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.category-products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.category-products-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-products-header h2 i {
+    color: var(--accent);
+}
+
+.category-products-header > div {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Small Button */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* Product Card Brand */
+.product-card-brand {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+/* Loading Container */
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--accent);
+}
+
+.loading-spinner i {
+    font-size: 32px;
+}
+
+.loading-spinner span {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Error Content */
+.error-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.error-content i {
+    font-size: 48px;
+    color: var(--warning);
+}
+
+.error-content h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.error-content p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Empty Content */
+.empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.empty-content i {
+    font-size: 48px;
+    opacity: 0.5;
+}
+
+.empty-content h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.empty-content p {
+    margin: 0;
+    font-size: 14px;
+}

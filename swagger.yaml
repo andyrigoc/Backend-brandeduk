@@ -1,0 +1,2574 @@
+openapi: 3.0.3
+info:
+  title: Branded UK E-Commerce API
+  description: |
+    # Overview
+    This API provides endpoints for the Branded UK e-commerce platform.
+    
+    ## Base URL
+    **Production**: `https://api.brandeduk.com`
+    
+    ## Authentication
+    No authentication required. Public API.
+    
+    ## Endpoint Categories
+    
+    ### Products (Main)
+    - `GET /api/products` - Main product listing with combined filters
+    - `GET /api/products/filters` - Product type counts for filtering
+    - `GET /api/products/types` - All product types with counts
+    - `GET /api/products/{code}` - Single product details
+    - `GET /api/products/{code}/pricing` - Get pricing information for a style code
+    
+    ### Contact & Quotes
+    - `POST /api/contact` - Submit contact form inquiry
+    - `POST /api/quotes` - Submit quote request with optional logo file uploads
+    
+    ### Filter Endpoints (Testing & Database Exploration)
+    Each filter type has TWO endpoints:
+    1. **List all values**: Returns all options from that database table
+    2. **Get products by slug**: Returns products matching a specific filter value
+    
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: https://api.brandeduk.com
+    description: Production Server
+  - url: http://localhost:3004
+    description: Local Development
+
+tags:
+  - name: Products
+    description: Main product listing, search, and details
+  - name: Categories
+    description: Category endpoints for dropdown menu and navigation
+  - name: Product Types
+    description: Product type filter endpoints
+  - name: Genders
+    description: Gender filter endpoints
+  - name: Age Groups
+    description: Age group filter endpoints
+  - name: Sleeves
+    description: Sleeve type filter endpoints
+  - name: Necklines
+    description: Neckline type filter endpoints
+  - name: Fabrics
+    description: Fabric type filter endpoints
+  - name: Sizes
+    description: Size filter endpoints
+  - name: Colors
+    description: Color filter endpoints
+  - name: Primary Colors
+    description: Primary color filter endpoints
+  - name: Styles
+    description: Style keyword filter endpoints
+  - name: Tags
+    description: Tag filter endpoints
+  - name: Weights
+    description: Weight range filter endpoints
+  - name: Fits
+    description: Fit type filter endpoints
+  - name: Sectors
+    description: Sector filter endpoints
+  - name: Sports
+    description: Sport filter endpoints
+  - name: Effects
+    description: Effect filter endpoints
+  - name: Accreditations
+    description: Accreditation filter endpoints
+  - name: Colour Shades
+    description: Colour shade filter endpoints
+  - name: Brands
+    description: Brand filter endpoints
+  - name: Price Range
+    description: Price range filter endpoints
+  - name: Health
+    description: Server health checks
+  - name: Contact
+    description: Contact form submission endpoints
+  - name: Quotes
+    description: Quote request endpoints with file uploads
+
+paths:
+  # ============================================================================
+  # MAIN PRODUCT ENDPOINTS
+  # ============================================================================
+  
+  /api/products:
+    get:
+      tags:
+        - Products
+      summary: Get product list (main combined filter endpoint)
+      description: |
+        Returns a paginated list of products with optional filtering and search.
+        This is the main endpoint that supports all filters combined.
+      operationId: getProducts
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Items per page (max 200)
+          schema:
+            type: integer
+            default: 24
+        - name: q
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: priceMin
+          in: query
+          schema:
+            type: number
+        - name: priceMax
+          in: query
+          schema:
+            type: number
+        - name: productType
+          in: query
+          description: Product type slug(s)
+          schema:
+            type: string
+        - name: gender
+          in: query
+          schema:
+            type: string
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+        - name: sleeve
+          in: query
+          schema:
+            type: string
+        - name: neckline
+          in: query
+          schema:
+            type: string
+        - name: fabric
+          in: query
+          schema:
+            type: string
+        - name: size
+          in: query
+          schema:
+            type: string
+        - name: colour
+          in: query
+          schema:
+            type: string
+        - name: primaryColour
+          in: query
+          schema:
+            type: string
+        - name: style
+          in: query
+          schema:
+            type: string
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: weight
+          in: query
+          schema:
+            type: string
+        - name: fit
+          in: query
+          schema:
+            type: string
+        - name: sector
+          in: query
+          schema:
+            type: string
+        - name: sport
+          in: query
+          schema:
+            type: string
+        - name: effect
+          in: query
+          schema:
+            type: string
+        - name: accreditations
+          in: query
+          schema:
+            type: string
+        - name: brand
+          in: query
+          description: Brand slug(s) or name(s) - accepts multiple values
+          schema:
+            type: string
+          example: "awdis"
+        - name: brands
+          in: query
+          description: Alias for brand parameter (accepts multiple values)
+          schema:
+            type: string
+        - name: colourShade
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: |
+            Sort option. Available values:
+            - `newest` - Sort by creation date (newest first)
+            - `best` - Best sellers (uses newest as proxy)
+            - `brand-az` - Sort by brand name A-Z
+            - `brand-za` - Sort by brand name Z-A
+            - `code-az` - Sort by product code A-Z
+            - `code-za` - Sort by product code Z-A
+            - `price-lh` - Sort by price low to high
+            - `price-hl` - Sort by price high to low
+            - `price` - Sort by price (use with order parameter)
+            - `name` - Sort by product name (use with order parameter)
+          schema:
+            type: string
+            enum: [newest, best, brand-az, brand-za, code-az, code-za, price-lh, price-hl, price, price-low, price-high, name]
+            default: newest
+            default: newest
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  total:
+                    type: integer
+                  priceRange:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                      max:
+                        type: number
+
+  /api/products/filters:
+    get:
+      tags:
+        - Products
+      summary: Get filter aggregations (counts)
+      description: Returns counts for all filter types based on current filters
+      operationId: getProductFilters
+      parameters:
+        - name: q
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: productType
+          in: query
+          schema:
+            type: string
+        - name: gender
+          in: query
+          schema:
+            type: string
+        - name: ageGroup
+          in: query
+          schema:
+            type: string
+        - name: sleeve
+          in: query
+          schema:
+            type: string
+        - name: neckline
+          in: query
+          schema:
+            type: string
+        - name: fabric
+          in: query
+          schema:
+            type: string
+        - name: size
+          in: query
+          schema:
+            type: string
+        - name: tag
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filters:
+                    type: object
+                    properties:
+                      gender:
+                        type: object
+                        description: Map of gender slug to count
+                      ageGroup:
+                        type: object
+                        description: Map of age group slug to count
+                      sleeve:
+                        type: object
+                        description: Map of sleeve slug to count
+                      neckline:
+                        type: object
+                        description: Map of neckline slug to count
+                      fabric:
+                        type: object
+                        description: Map of fabric slug to count
+                      size:
+                        type: object
+                        description: Map of size slug to count
+                      feature:
+                        type: object
+                        description: Map of feature slug to count
+                      tag:
+                        type: object
+                        description: Map of tag slug to count
+
+  /api/products/types:
+    get:
+      tags:
+        - Products
+      summary: Get all product types with counts
+      operationId: getProductTypes
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productTypes:
+                    type: array
+                  total:
+                    type: integer
+
+  /api/products/{code}:
+    get:
+      tags:
+        - Products
+      summary: Get product details by code
+      operationId: getProductDetail
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "JC001"
+      responses:
+        '200':
+          description: Successful response
+        '404':
+          description: Product not found
+
+  /api/products/{code}/related:
+    get:
+      tags:
+        - Products
+      summary: Get related products
+      description: |
+        Returns products related to the specified product.
+        Priority: Same brand AND same product type first, then same product type from other brands.
+      operationId: getRelatedProducts
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: Product style code
+          schema:
+            type: string
+          example: "JC001"
+        - name: limit
+          in: query
+          description: Maximum number of related products to return
+          schema:
+            type: integer
+            default: 12
+          example: 12
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currentProduct:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      brand:
+                        type: string
+                      productType:
+                        type: string
+                  related:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        name:
+                          type: string
+                        price:
+                          type: number
+                        image:
+                          type: string
+                        brand:
+                          type: string
+                        product_type:
+                          type: string
+                  total:
+                    type: integer
+                  sameBrandAndType:
+                    type: integer
+                    description: Number of products from same brand AND type
+                  sameTypeOnly:
+                    type: integer
+                    description: Number of products from same type only (different brand)
+        '404':
+          description: Product not found
+
+  /api/products/{code}/pricing:
+    get:
+      tags:
+        - Products
+      summary: Get pricing information for a style code
+      description: |
+        Returns pricing breakdown for a product including:
+        - carton_price (or single_price if carton_price is 0/null)
+        - markup_percent (the pricing rule percentage applied)
+        - sell_price (the calculated selling price)
+        - pricing_rule details (price range and description)
+      operationId: getProductPricing
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: Product style code
+          schema:
+            type: string
+          example: "JC001"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  style_code:
+                    type: string
+                    example: "JC001"
+                  carton_price:
+                    type: number
+                    description: Carton price (or single_price if carton_price is 0/null)
+                    example: 10.50
+                  single_price:
+                    type: number
+                    description: Single unit price
+                    example: 10.50
+                  markup_percent:
+                    type: number
+                    nullable: true
+                    description: Markup percentage applied from pricing rules
+                    example: 127.00
+                  sell_price:
+                    type: number
+                    nullable: true
+                    description: Calculated selling price after markup
+                    example: 23.84
+                  pricing_rule:
+                    type: object
+                    nullable: true
+                    description: Details of the pricing rule applied
+                    properties:
+                      from_price:
+                        type: number
+                        example: 10.00
+                      to_price:
+                        type: number
+                        example: 14.99
+                      markup_percent:
+                        type: number
+                        example: 127.00
+                      description:
+                        type: string
+                        example: "127% markup for £10.00-£14.99 (reduced by 5%)"
+        '404':
+          description: Product not found or has no pricing information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Product not found or has no pricing information"
+                  style_code:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ============================================================================
+  # PRODUCT TYPE ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/product-types:
+    get:
+      tags:
+        - Product Types
+      summary: Get all product types from database
+      description: Returns all product types with their product counts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productTypes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        slug:
+                          type: string
+                        display_order:
+                          type: integer
+                        product_count:
+                          type: integer
+                  total:
+                    type: integer
+
+  /api/filters/product-types/{slug}/products:
+    get:
+      tags:
+        - Product Types
+      summary: Get products by product type slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "t-shirts"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # GENDER ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/genders:
+    get:
+      tags:
+        - Genders
+      summary: Get all genders from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/genders/{slug}/products:
+    get:
+      tags:
+        - Genders
+      summary: Get products by gender slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "male"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # AGE GROUP ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/age-groups:
+    get:
+      tags:
+        - Age Groups
+      summary: Get all age groups from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ageGroups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/age-groups/{slug}/products:
+    get:
+      tags:
+        - Age Groups
+      summary: Get products by age group slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "adult"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # SLEEVE ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/sleeves:
+    get:
+      tags:
+        - Sleeves
+      summary: Get all sleeve types from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sleeves:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/sleeves/{slug}/products:
+    get:
+      tags:
+        - Sleeves
+      summary: Get products by sleeve slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "long-sleeve"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # NECKLINE ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/necklines:
+    get:
+      tags:
+        - Necklines
+      summary: Get all neckline types from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  necklines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/necklines/{slug}/products:
+    get:
+      tags:
+        - Necklines
+      summary: Get products by neckline slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "crew-neck"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # FABRIC ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/fabrics:
+    get:
+      tags:
+        - Fabrics
+      summary: Get all fabric types from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fabrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/fabrics/{slug}/products:
+    get:
+      tags:
+        - Fabrics
+      summary: Get products by fabric slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "cotton"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # SIZE ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/sizes:
+    get:
+      tags:
+        - Sizes
+      summary: Get all sizes from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sizes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/sizes/{slug}/products:
+    get:
+      tags:
+        - Sizes
+      summary: Get products by size slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "xl"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # COLOR ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/colors:
+    get:
+      tags:
+        - Colors
+      summary: Get all colors from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  colors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/colors/{slug}/products:
+    get:
+      tags:
+        - Colors
+      summary: Get products by color slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "red"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # PRIMARY COLOR ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/primary-colors:
+    get:
+      tags:
+        - Primary Colors
+      summary: Get all primary colors from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  primaryColors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/primary-colors/{slug}/products:
+    get:
+      tags:
+        - Primary Colors
+      summary: Get products by primary color slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "black"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # STYLE KEYWORD ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/styles:
+    get:
+      tags:
+        - Styles
+      summary: Get all style keywords from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  styles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/styles/{slug}/products:
+    get:
+      tags:
+        - Styles
+      summary: Get products by style keyword slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "classic"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # TAG ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/tags:
+    get:
+      tags:
+        - Tags
+      summary: Get all tags from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/tags/{slug}/products:
+    get:
+      tags:
+        - Tags
+      summary: Get products by tag slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "print"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # WEIGHT ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/weights:
+    get:
+      tags:
+        - Weights
+      summary: Get all weight ranges from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  weights:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/weights/{slug}/products:
+    get:
+      tags:
+        - Weights
+      summary: Get products by weight slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "150gsm"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # FIT ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/fits:
+    get:
+      tags:
+        - Fits
+      summary: Get all fit types from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fits:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/fits/{slug}/products:
+    get:
+      tags:
+        - Fits
+      summary: Get products by fit slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "regular"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # SECTOR ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/sectors:
+    get:
+      tags:
+        - Sectors
+      summary: Get all sectors from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sectors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/sectors/{slug}/products:
+    get:
+      tags:
+        - Sectors
+      summary: Get products by sector slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "workwear"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # SPORT ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/sports:
+    get:
+      tags:
+        - Sports
+      summary: Get all sports from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/sports/{slug}/products:
+    get:
+      tags:
+        - Sports
+      summary: Get products by sport slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "running"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # EFFECT ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/effects:
+    get:
+      tags:
+        - Effects
+      summary: Get all effects from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  effects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/effects/{slug}/products:
+    get:
+      tags:
+        - Effects
+      summary: Get products by effect slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "reflective"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # ACCREDITATION ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/accreditations:
+    get:
+      tags:
+        - Accreditations
+      summary: Get all accreditations from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accreditations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/accreditations/{slug}/products:
+    get:
+      tags:
+        - Accreditations
+      summary: Get products by accreditation slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "oeko-tex"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # COLOUR SHADE ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/colour-shades:
+    get:
+      tags:
+        - Colour Shades
+      summary: Get all colour shades from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  colourShades:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/colour-shades/{slug}/products:
+    get:
+      tags:
+        - Colour Shades
+      summary: Get products by colour shade slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "dark"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # BRAND ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/brands:
+    get:
+      tags:
+        - Brands
+      summary: Get all brands from database
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brands:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilterItem'
+                  total:
+                    type: integer
+
+  /api/filters/brands/{slug}/products:
+    get:
+      tags:
+        - Brands
+      summary: Get products by brand slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "awdis"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  /api/filters/brands/{slug}/filters:
+    get:
+      tags:
+        - Brands
+      summary: Get all sidebar filter aggregations for a specific brand
+      description: |
+        Returns all filter options with counts for products within a specific brand.
+        Includes: gender, ageGroup, sleeve, neckline, fabric, size, weight, fit, feature, 
+        effect, accreditations, sector, sport, tag, primaryColour, colourShade, productType, priceRange.
+        Uses the same CTE approach as the main product filters for consistency.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Brand slug (e.g., "nike", "awdis", "under-armour")
+          schema:
+            type: string
+          example: "nike"
+      responses:
+        '200':
+          description: Successful response with all filter aggregations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brand:
+                    type: string
+                    description: The brand slug that was queried
+                    example: "nike"
+                  totalProducts:
+                    type: integer
+                    description: Total number of styles for this brand
+                    example: 60
+                  filters:
+                    type: object
+                    properties:
+                      gender:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      ageGroup:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      sleeve:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      neckline:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      accreditations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      primaryColour:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      colourShade:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      style:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      feature:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      size:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SizeFilterAggregation'
+                      fabric:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      weight:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      fit:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      sector:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      sport:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      tag:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      effect:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      productType:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FilterAggregation'
+                      priceRange:
+                        type: object
+                        properties:
+                          min:
+                            type: number
+                            example: 12.50
+                          max:
+                            type: number
+                            example: 85.00
+              example:
+                brand: "nike"
+                totalProducts: 60
+                filters:
+                  gender:
+                    - slug: "male"
+                      name: "Male"
+                      count: 28
+                    - slug: "unisex"
+                      name: "Unisex"
+                      count: 24
+                  ageGroup:
+                    - slug: "adult"
+                      name: "Adult"
+                      count: 60
+                  sleeve:
+                    - slug: "long-sleeve"
+                      name: "Long Sleeve"
+                      count: 2
+                  size:
+                    - slug: "s"
+                      name: "S"
+                      count: 36
+                      sizeOrder: 3
+                  fabric:
+                    - slug: "polyester-100"
+                      name: "Polyester (100%)"
+                      count: 25
+                  sport:
+                    - slug: "golf"
+                      name: "Golf"
+                      count: 52
+                  productType:
+                    - slug: "polos"
+                      name: "Polos"
+                      count: 10
+                  priceRange:
+                    min: 12.50
+                    max: 85.00
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ============================================================================
+  # PRICE RANGE ENDPOINTS
+  # ============================================================================
+  
+  /api/filters/price-range:
+    get:
+      tags:
+        - Price Range
+      summary: Get min/max price range
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  min:
+                    type: number
+                  max:
+                    type: number
+
+  /api/filters/price-range/{min}/{max}/products:
+    get:
+      tags:
+        - Price Range
+      summary: Get products within price range
+      parameters:
+        - name: min
+          in: path
+          required: true
+          schema:
+            type: number
+          example: 5
+        - name: max
+          in: path
+          required: true
+          schema:
+            type: number
+          example: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 24
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  # ============================================================================
+  # CATEGORY ENDPOINTS
+  # ============================================================================
+  
+  /api/categories/dropdown:
+    get:
+      tags:
+        - Categories
+      summary: Get categories for dropdown menu
+      description: |
+        Returns top 10 product types (main categories) ordered by display_order, 
+        each with up to 5 style keywords (subcategories).
+        This endpoint is specifically designed for the frontend category dropdown menu.
+        Each category includes product counts for both the main category and its subcategories.
+      operationId: getDropdownCategories
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DropdownCategory'
+              example:
+                - id: 92
+                  name: "Sweatshirts"
+                  slug: "sweatshirts"
+                  displayOrder: 1
+                  productCount: 1500
+                  subcategories:
+                    - id: 18
+                      name: "crew neck"
+                      slug: "crew-neck"
+                      productCount: 250
+                    - id: 19
+                      name: "oversized"
+                      slug: "oversized"
+                      productCount: 180
+                - id: 51
+                  name: "Jackets"
+                  slug: "jackets"
+                  displayOrder: 1
+                  productCount: 2000
+                  subcategories:
+                    - id: 22
+                      name: "zipped"
+                      slug: "zipped"
+                      productCount: 300
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      description: |
+        Returns all categories with hierarchical structure (parent categories with subcategories).
+        Supports both hierarchical and flat formats.
+      operationId: getAllCategories
+      parameters:
+        - name: format
+          in: query
+          description: Response format
+          schema:
+            type: string
+            enum: [hierarchical, flat]
+            default: hierarchical
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/categories/stats:
+    get:
+      tags:
+        - Categories
+      summary: Get category statistics
+      description: |
+        Returns diagnostic information about category structure.
+        Useful for debugging why subcategories might be empty.
+      operationId: getCategoryStats
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statistics:
+                    type: object
+                  sampleSubcategories:
+                    type: array
+                  rootCategoriesWithChildCounts:
+                    type: array
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/categories/{slug}:
+    get:
+      tags:
+        - Categories
+      summary: Get category by slug
+      description: |
+        Returns a single category by its slug with its subcategories.
+      operationId: getCategoryBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Category slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ============================================================================
+  # HEALTH ENDPOINTS
+  # ============================================================================
+  
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      responses:
+        '200':
+          description: Healthy
+
+  /health/live:
+    get:
+      tags:
+        - Health
+      summary: Liveness check
+      responses:
+        '200':
+          description: Alive
+
+  /health/ready:
+    get:
+      tags:
+        - Health
+      summary: Readiness check
+      responses:
+        '200':
+          description: Ready
+
+  # ============================================================================
+  # CONTACT FORM ENDPOINT
+  # ============================================================================
+  
+  /api/contact:
+    post:
+      tags:
+        - Contact
+      summary: Submit contact form
+      description: |
+        Submit a contact form inquiry. Supports rate limiting (max 3 submissions per email per hour).
+        Sends email notification to the configured recipient address.
+      operationId: submitContactForm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactFormRequest'
+            example:
+              name: "John Doe"
+              email: "john@example.com"
+              interest: "embroidery"
+              phone: "+44 20 1234 5678"
+              address: "123 Main Street, London"
+              postCode: "SW1A 1AA"
+              message: "I need custom workwear for my team of 50 employees."
+      responses:
+        '200':
+          description: Contact form submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactFormResponse'
+              example:
+                success: true
+                message: "Thank you for your inquiry. We'll get back to you soon."
+                id: "contact_1769198076999_x80gdu004"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactFormError'
+              example:
+                success: false
+                error: "Validation failed"
+                errors:
+                  email: "Invalid email format"
+                  name: "Name is required"
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Too many submissions"
+                  message:
+                    type: string
+                    example: "Maximum 3 contact form submissions per hour. Please try again later."
+                  retryAfter:
+                    type: integer
+                    example: 1800
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ============================================================================
+  # QUOTE REQUEST ENDPOINT
+  # ============================================================================
+  
+  /api/quotes:
+    post:
+      tags:
+        - Quotes
+      summary: Submit quote request with optional logo uploads
+      description: |
+        Submit a quote request for custom products. Supports two formats:
+        1. **multipart/form-data** - When logo files are included (recommended)
+        2. **application/json** - Backward compatible format without files
+        
+        Logo files are named using the pattern: `logo_{position-slug}` (e.g., `logo_left-breast`, `logo_large-front-center`).
+        Maximum 10 logo files, 5MB each. Only image files (jpg, png, gif, webp) are accepted.
+      operationId: submitQuoteRequest
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - quoteData
+              properties:
+                quoteData:
+                  type: string
+                  description: JSON string containing all quote data (customer, basket, customizations, summary, timestamp)
+                  example: '{"customer":{"fullName":"John Doe","email":"john@example.com","phone":"+44 20 1234 5678","company":"Acme Corp","address":"123 Main St"},"basket":[{"name":"Product Name","code":"PROD-123","color":"Navy","quantity":50,"sizes":{"S":10,"M":20,"L":20},"unitPrice":10.00,"itemTotal":500.00}],"customizations":[{"position":"Left Breast","method":"Embroidery","type":"logo","hasLogo":true,"unitPrice":5.00,"lineTotal":250.00,"quantity":50}],"summary":{"totalQuantity":50,"totalItems":1,"garmentCost":500.00,"customizationCost":250.00,"digitizingFee":25.00,"subtotal":775.00,"vatRate":0.20,"vatAmount":155.00,"totalExVat":775.00,"totalIncVat":930.00,"vatMode":"inc","displayTotal":930.00},"timestamp":"2026-01-15T10:30:00.000Z"}'
+                logo_left-breast:
+                  type: string
+                  format: binary
+                  description: Logo image file for left breast position (max 5MB, jpg/png/gif/webp)
+                logo_right-breast:
+                  type: string
+                  format: binary
+                  description: Logo image file for right breast position (max 5MB, jpg/png/gif/webp)
+                logo_large-front-center:
+                  type: string
+                  format: binary
+                  description: Logo image file for large front center position (max 5MB, jpg/png/gif/webp)
+                logo_small-centre-front:
+                  type: string
+                  format: binary
+                  description: Logo image file for small centre front position (max 5MB, jpg/png/gif/webp)
+                logo_back-center:
+                  type: string
+                  format: binary
+                  description: Logo image file for back center position (max 5MB, jpg/png/gif/webp)
+                logo_left-sleeve:
+                  type: string
+                  format: binary
+                  description: Logo image file for left sleeve position (max 5MB, jpg/png/gif/webp)
+                logo_right-sleeve:
+                  type: string
+                  format: binary
+                  description: Logo image file for right sleeve position (max 5MB, jpg/png/gif/webp)
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+            example:
+              customer:
+                fullName: "John Doe"
+                company: "Acme Corp"
+                phone: "+44 20 1234 5678"
+                email: "john@example.com"
+                address: "123 Main St, London"
+              summary:
+                totalQuantity: 50
+                totalItems: 1
+                garmentCost: 500.00
+                customizationCost: 250.00
+                digitizingFee: 25.00
+                subtotal: 775.00
+                vatRate: 0.20
+                vatAmount: 155.00
+                totalExVat: 775.00
+                totalIncVat: 930.00
+                vatMode: "inc"
+                displayTotal: 930.00
+              basket:
+                - name: "Product Name"
+                  code: "PROD-123"
+                  color: "Navy"
+                  quantity: 50
+                  sizes:
+                    S: 10
+                    M: 20
+                    L: 20
+                  sizesSummary: "S: 10, M: 20, L: 20"
+                  unitPrice: 10.00
+                  itemTotal: 500.00
+              customizations:
+                - position: "Left Breast"
+                  method: "Embroidery"
+                  type: "logo"
+                  hasLogo: true
+                  unitPrice: 5.00
+                  lineTotal: 250.00
+                  quantity: 50
+              timestamp: "2026-01-15T10:30:00.000Z"
+      responses:
+        '200':
+          description: Quote submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteResponse'
+              example:
+                success: true
+                message: "Quote submitted successfully"
+                quoteId: "quote_1769198120482_i98a3pwgg"
+        '400':
+          description: Validation error or file upload error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    examples:
+                      - "Customer email is required"
+                      - "Customer full name is required"
+                      - "Customer phone is required"
+                      - "Basket is required"
+                      - "File too large. Maximum size is 5MB per file."
+                      - "Too many files. Maximum 10 logo files allowed."
+                      - "Only image files are allowed."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    FilterItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        product_count:
+          type: integer
+
+    FilterAggregation:
+      type: object
+      description: Filter option with count
+      properties:
+        slug:
+          type: string
+          description: URL-friendly identifier
+          example: "male"
+        name:
+          type: string
+          description: Display name
+          example: "Male"
+        count:
+          type: integer
+          description: Number of products matching this filter
+          example: 28
+
+    SizeFilterAggregation:
+      type: object
+      description: Size filter option with count and order
+      properties:
+        slug:
+          type: string
+          description: URL-friendly identifier
+          example: "s"
+        name:
+          type: string
+          description: Display name
+          example: "S"
+        count:
+          type: integer
+          description: Number of products matching this size
+          example: 36
+        sizeOrder:
+          type: integer
+          description: Sort order for sizes
+          example: 3
+
+    ProductListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              name:
+                type: string
+              price:
+                type: number
+              image:
+                type: string
+              brand:
+                type: string
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+    DropdownCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Product type ID
+        name:
+          type: string
+          description: Product type name (e.g., "Sweatshirts", "Jackets")
+        slug:
+          type: string
+          description: Product type slug (e.g., "sweatshirts", "jackets")
+        displayOrder:
+          type: integer
+          description: Display order for sorting
+        productCount:
+          type: integer
+          description: Total number of products in this category
+        subcategories:
+          type: array
+          description: Style keywords (subcategories) associated with this product type
+          items:
+            $ref: '#/components/schemas/DropdownSubcategory'
+
+    DropdownSubcategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Style keyword ID
+        name:
+          type: string
+          description: Style keyword name (e.g., "crew neck", "zipped")
+        slug:
+          type: string
+          description: Style keyword slug (e.g., "crew-neck", "zipped")
+        productCount:
+          type: integer
+          description: Number of products with this style keyword
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        parentId:
+          type: integer
+          nullable: true
+        displayOrder:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        categoryType:
+          type: string
+          nullable: true
+        subcategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+
+    ContactFormRequest:
+      type: object
+      required:
+        - name
+        - email
+        - interest
+        - message
+      properties:
+        name:
+          type: string
+          description: Contact's full name (2-100 characters)
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Valid email address
+          example: "john@example.com"
+        interest:
+          type: string
+          enum: [embroidery, printing, workwear, uniforms, promotional, other]
+          description: What they're interested in
+          example: "embroidery"
+        phone:
+          type: string
+          description: Phone number (optional, 7-20 characters)
+          example: "+44 20 1234 5678"
+        address:
+          type: string
+          description: Street address (optional, desktop form only)
+          example: "123 Main Street, London"
+        postCode:
+          type: string
+          description: UK post code (optional, desktop form only)
+          example: "SW1A 1AA"
+        message:
+          type: string
+          description: User's message/query (10-5000 characters)
+          example: "I need custom workwear for my team of 50 employees."
+
+    ContactFormResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Thank you for your inquiry. We'll get back to you soon."
+        id:
+          type: string
+          description: Unique contact submission ID
+          example: "contact_1769198076999_x80gdu004"
+
+    ContactFormError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Validation failed"
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            email: "Invalid email format"
+            name: "Name is required"
+            interest: "Interest is required"
+            message: "Message must be at least 10 characters"
+
+    QuoteRequest:
+      type: object
+      required:
+        - customer
+        - basket
+      properties:
+        customer:
+          type: object
+          required:
+            - fullName
+            - email
+            - phone
+          properties:
+            fullName:
+              type: string
+              example: "John Doe"
+            company:
+              type: string
+              nullable: true
+              example: "Acme Corp"
+            phone:
+              type: string
+              example: "+44 20 1234 5678"
+            email:
+              type: string
+              format: email
+              example: "john@example.com"
+            address:
+              type: string
+              nullable: true
+              example: "123 Main St, London"
+        summary:
+          type: object
+          properties:
+            totalQuantity:
+              type: integer
+              example: 50
+            totalItems:
+              type: integer
+              example: 1
+            garmentCost:
+              type: number
+              example: 500.00
+            customizationCost:
+              type: number
+              example: 250.00
+            digitizingFee:
+              type: number
+              example: 25.00
+            subtotal:
+              type: number
+              example: 775.00
+            vatRate:
+              type: number
+              example: 0.20
+            vatAmount:
+              type: number
+              example: 155.00
+            totalExVat:
+              type: number
+              example: 775.00
+            totalIncVat:
+              type: number
+              example: 930.00
+            vatMode:
+              type: string
+              enum: [inc, ex]
+              example: "inc"
+            displayTotal:
+              type: number
+              example: 930.00
+        basket:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "Product Name"
+              code:
+                type: string
+                example: "PROD-123"
+              color:
+                type: string
+                example: "Navy"
+              quantity:
+                type: integer
+                example: 50
+              sizes:
+                type: object
+                additionalProperties:
+                  type: integer
+                example:
+                  S: 10
+                  M: 20
+                  L: 20
+              sizesSummary:
+                type: string
+                example: "S: 10, M: 20, L: 20"
+              unitPrice:
+                type: number
+                example: 10.00
+              itemTotal:
+                type: number
+                example: 500.00
+              image:
+                type: string
+                nullable: true
+                example: "https://example.com/image.jpg"
+        customizations:
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: string
+                example: "Left Breast"
+              method:
+                type: string
+                enum: [Embroidery, Print]
+                example: "Embroidery"
+              type:
+                type: string
+                example: "logo"
+              hasLogo:
+                type: boolean
+                example: true
+              text:
+                type: string
+                nullable: true
+                example: null
+              unitPrice:
+                type: number
+                example: 5.00
+              lineTotal:
+                type: number
+                example: 250.00
+              quantity:
+                type: integer
+                example: 50
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-01-15T10:30:00.000Z"
+
+    QuoteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Quote submitted successfully"
+        quoteId:
+          type: string
+          description: Unique quote submission ID
+          example: "quote_1769198120482_i98a3pwgg"
