@@ -15,8 +15,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initSidebar() {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
+    const productsMenu = document.getElementById('products-menu');
+    const productsSubmenu = document.getElementById('products-submenu');
     const decorationMenu = document.getElementById('decoration-menu');
     const decorationSubmenu = document.getElementById('decoration-submenu');
+    const stockDesignsMenu = document.getElementById('stock-designs-menu');
+    const stockDesignsSubmenu = document.getElementById('stock-designs-submenu');
 
     // Toggle sidebar collapse
     sidebarToggle.addEventListener('click', function() {
@@ -24,19 +28,47 @@ function initSidebar() {
         
         // Close submenu when collapsing
         if (sidebar.classList.contains('collapsed')) {
-            decorationMenu.classList.remove('open');
-            decorationSubmenu.classList.remove('open');
+            if (productsMenu) productsMenu.classList.remove('open');
+            if (productsSubmenu) productsSubmenu.classList.remove('open');
+            if (decorationMenu) decorationMenu.classList.remove('open');
+            if (decorationSubmenu) decorationSubmenu.classList.remove('open');
+            if (stockDesignsMenu) stockDesignsMenu.classList.remove('open');
+            if (stockDesignsSubmenu) stockDesignsSubmenu.classList.remove('open');
         }
     });
 
+    // Products submenu toggle
+    if (productsMenu && productsSubmenu) {
+        productsMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!sidebar.classList.contains('collapsed')) {
+                this.classList.toggle('open');
+                productsSubmenu.classList.toggle('open');
+            }
+        });
+    }
+
     // Decoration submenu toggle
-    decorationMenu.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (!sidebar.classList.contains('collapsed')) {
-            this.classList.toggle('open');
-            decorationSubmenu.classList.toggle('open');
-        }
-    });
+    if (decorationMenu && decorationSubmenu) {
+        decorationMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!sidebar.classList.contains('collapsed')) {
+                this.classList.toggle('open');
+                decorationSubmenu.classList.toggle('open');
+            }
+        });
+    }
+
+    // Stock Designs submenu toggle
+    if (stockDesignsMenu && stockDesignsSubmenu) {
+        stockDesignsMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!sidebar.classList.contains('collapsed')) {
+                this.classList.toggle('open');
+                stockDesignsSubmenu.classList.toggle('open');
+            }
+        });
+    }
 }
 
 /**
@@ -70,6 +102,22 @@ function initNavigation() {
                     initCategoriesPage();
                 } else if (pageId === 'dashboard') {
                     initDashboard();
+                } else if (pageId === 'suppliers-in-use') {
+                    if (typeof initSuppliersInUsePage === 'function') initSuppliersInUsePage();
+                } else if (pageId === 'supplier-markup') {
+                    if (typeof initSupplierMarkupPage === 'function') initSupplierMarkupPage();
+                } else if (pageId === 'decoration-areas') {
+                    if (typeof initDecorationAreasPage === 'function') initDecorationAreasPage();
+                } else if (pageId === 'volume-discounts') {
+                    if (typeof initVolumeDiscountsPage === 'function') initVolumeDiscountsPage();
+                } else if (pageId === 'product-groups') {
+                    if (typeof initProductGroupsPage === 'function') initProductGroupsPage();
+                } else if (pageId === 'stock-designs-list') {
+                    if (typeof initStockDesignsListPage === 'function') initStockDesignsListPage();
+                } else if (pageId === 'decoration-processes-list') {
+                    if (typeof initDecorationProcessesListPage === 'function') initDecorationProcessesListPage();
+                } else if (pageId === 'decoration-pricing') {
+                    if (typeof initDecorationPricingPage === 'function') initDecorationPricingPage();
                 }
             }
             
@@ -89,9 +137,22 @@ function updateBreadcrumb(pageId) {
     const titles = {
         'dashboard': 'Dashboard',
         'products': 'Products',
+        'suppliers-in-use': 'Suppliers In Use',
+        'supplier-markup': 'Supplier Product Markup',
+        'supplier-account-details': 'Supplier Account Details',
+        'decoration-areas': 'Decoration Areas',
+        'volume-discounts': 'Volume Discounts',
+        'sizes': 'Sizes',
+        'custom-fields': 'Custom Fields',
+        'bulk-product-display': 'Bulk Product Display',
+        'inventory-settings': 'Inventory Settings',
         'categories': 'Categories',
         'brands': 'Brands',
         'product-groups': 'Product Groups',
+        'stock-designs-list': 'Stock Designs List',
+        'stock-design-collections': 'Stock Design Collections',
+        'decoration-processes-list': 'Decoration Processes List',
+        'decoration-pricing': 'Decoration Pricing',
         'pricing-rules': 'Pricing Rules',
         'quotes': 'Quotes',
         'customers': 'Customers',

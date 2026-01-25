@@ -171,7 +171,12 @@ function getProductsPageHTML() {
                                 <th>Product Name</th>
                                 <th>Brand</th>
                                 <th>Type</th>
-                                <th style="text-align: right;">Price From</th>
+                                <th class="price-cell">Blank</th>
+                                <th class="price-cell">DTG</th>
+                                <th class="price-cell">EMB</th>
+                                <th class="price-cell">SCR</th>
+                                <th class="price-cell">HTV</th>
+                                <th class="price-cell">DTF</th>
                                 <th>Colors</th>
                                 <th></th>
                             </tr>
@@ -186,6 +191,25 @@ function getProductsPageHTML() {
             </div>
         </div>
     `;
+}
+
+function getColorCss(colorName) {
+    try {
+        return window.COLOR_UTILS?.toCss ? window.COLOR_UTILS.toCss(colorName) : '#d1d5db';
+    } catch {
+        return '#d1d5db';
+    }
+}
+
+function getProcessPrice(product, key) {
+    // Future-proof: support different API shapes
+    return (
+        product?.prices?.[key] ??
+        product?.pricing?.[key] ??
+        product?.customisationPrices?.[key] ??
+        product?.customizationPrices?.[key] ??
+        null
+    );
 }
 
 /**
@@ -350,14 +374,26 @@ function renderProducts() {
         return;
     }
     
+    window.__productSummaryCache = window.__productSummaryCache || {};
+
     tbody.innerHTML = products.map(product => {
         const code = product.code || product.styleCode || 'N/A';
         const name = product.name || product.styleName || 'Unnamed Product';
         const brand = product.brand || 'N/A';
         const productType = product.productType || 'N/A';
         const image = product.image || product.primaryImage || '';
-        const price = product.priceRange?.min || product.minPrice || product.price || null;
+        const blankPrice = product.priceRange?.min || product.minPrice || product.price || null;
+        const dtgPrice = getProcessPrice(product, 'dtg');
+        const embPrice = getProcessPrice(product, 'emb');
+        const scrPrice = getProcessPrice(product, 'scr');
+        const htvPrice = getProcessPrice(product, 'htv');
+        const dtfPrice = getProcessPrice(product, 'dtf');
         const colors = product.colors || product.colourVariants || [];
+
+        // Cache summary for cross-page modal usage
+        if (code && code !== 'N/A') {
+            window.__productSummaryCache[String(code).toUpperCase()] = product;
+        }
         
         return `
             <tr class="${selectedProducts.includes(code) ? 'selected' : ''}" data-code="${code}">
@@ -385,7 +421,12 @@ function renderProducts() {
                 <td>
                     <span class="product-type-badge">${productType}</span>
                 </td>
-                <td class="price-cell">${formatPrice(price)}</td>
+                <td class="price-cell">${formatPrice(blankPrice)}</td>
+                <td class="price-cell">${formatPrice(dtgPrice)}</td>
+                <td class="price-cell">${formatPrice(embPrice)}</td>
+                <td class="price-cell">${formatPrice(scrPrice)}</td>
+                <td class="price-cell">${formatPrice(htvPrice)}</td>
+                <td class="price-cell">${formatPrice(dtfPrice)}</td>
                 <td>
                     <div class="colors-preview">
                         ${renderColorDots(colors)}
@@ -419,8 +460,9 @@ function renderColorDots(colors) {
     const remaining = colors.length - 5;
     
     let html = displayColors.map(color => {
-        const colorName = typeof color === 'string' ? color : (color.name || color.colour || color.primaryColour || '');
-        return `<span class="color-dot" title="${colorName}"></span>`;
+        const colorName = typeof color === 'string' ? color : (color.name || color.colour || color.primaryColour || color.color || '');
+        const css = getColorCss(colorName);
+        return `<span class="color-dot" title="${colorName}" style="background:${css}"></span>`;
     }).join('');
     
     if (remaining > 0) {

@@ -1122,18 +1122,24 @@ function escapeHtml(text) {
 }
 
 function getColorHex(colorName) {
-    if (!colorName) return '#cccccc';
-    const colors = {
-        'black': '#000000', 'white': '#ffffff', 'red': '#dc2626', 'blue': '#2563eb',
-        'navy': '#1e3a5f', 'green': '#16a34a', 'yellow': '#eab308', 'orange': '#f97316',
-        'pink': '#ec4899', 'purple': '#7c3aed', 'grey': '#6b7280', 'gray': '#6b7280',
-        'charcoal': '#374151', 'royal': '#1d4ed8', 'maroon': '#7f1d1d', 'teal': '#0d9488'
-    };
-    const name = colorName.toLowerCase();
-    for (const [key, hex] of Object.entries(colors)) {
-        if (name.includes(key)) return hex;
-    }
-    return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    if (!colorName) return '#d1d5db';
+    if (window.COLOR_UTILS?.toHex) return window.COLOR_UTILS.toHex(colorName);
+
+    const name = String(colorName).toLowerCase();
+    if (name.includes('black')) return '#111827';
+    if (name.includes('white')) return '#ffffff';
+    if (name.includes('navy')) return '#1e3a5f';
+    if (name.includes('blue')) return '#2563eb';
+    if (name.includes('charcoal')) return '#374151';
+    if (name.includes('grey') || name.includes('gray')) return '#6b7280';
+    if (name.includes('purple') || name.includes('violet')) return '#7c3aed';
+    if (name.includes('red') || name.includes('maroon') || name.includes('burgundy')) return '#dc2626';
+    if (name.includes('green')) return '#16a34a';
+    if (name.includes('yellow') || name.includes('gold')) return '#eab308';
+    if (name.includes('orange')) return '#f97316';
+    if (name.includes('pink')) return '#ec4899';
+    if (name.includes('brown')) return '#8b5a2b';
+    return '#d1d5db';
 }
 
 function getSearchFacet(colorName) {

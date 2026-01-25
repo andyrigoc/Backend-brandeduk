@@ -6,6 +6,8 @@
     <title>BrandedUK Admin Hub</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/products.css">
+    <link rel="stylesheet" href="css/products-settings.css">
+    <link rel="stylesheet" href="css/decoration-settings.css">
     <link rel="stylesheet" href="css/brands.css">
     <link rel="stylesheet" href="css/categories.css">
     <link rel="stylesheet" href="css/modal.css">
@@ -53,10 +55,43 @@
                     </a>
                     
                     <div class="nav-section">PRODUCTS</div>
-                    <a href="#" class="nav-item" data-page="products">
+                    <div class="nav-item has-submenu" id="products-menu">
                         <i class="fas fa-box"></i>
                         <span>Products</span>
-                    </a>
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </div>
+                    <div class="submenu" id="products-submenu">
+                        <a href="#" class="nav-item sub" data-page="products">
+                            <span>Search Products</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="suppliers-in-use">
+                            <span>Suppliers In Use</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="supplier-markup">
+                            <span>Supplier Product Markup</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="supplier-account-details">
+                            <span>Supplier Account Details</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="decoration-areas">
+                            <span>Decoration Areas</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="volume-discounts">
+                            <span>Volume Discounts</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="sizes">
+                            <span>Sizes</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="custom-fields">
+                            <span>Custom Fields</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="bulk-product-display">
+                            <span>Bulk Product Display</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="inventory-settings">
+                            <span>Inventory Settings</span>
+                        </a>
+                    </div>
                     <a href="#" class="nav-item" data-page="categories">
                         <i class="fas fa-th-large"></i>
                         <span>Categories</span>
@@ -70,6 +105,21 @@
                         <span>Product Groups</span>
                     </a>
 
+                    <div class="nav-section">STOCK DESIGNS</div>
+                    <div class="nav-item has-submenu" id="stock-designs-menu">
+                        <i class="fas fa-images"></i>
+                        <span>Stock Designs</span>
+                        <i class="fas fa-chevron-down submenu-arrow"></i>
+                    </div>
+                    <div class="submenu" id="stock-designs-submenu">
+                        <a href="#" class="nav-item sub" data-page="stock-designs-list">
+                            <span>Stock Designs List</span>
+                        </a>
+                        <a href="#" class="nav-item sub" data-page="stock-design-collections">
+                            <span>Stock Design Collections</span>
+                        </a>
+                    </div>
+
                     <div class="nav-section">PRICING</div>
                     <a href="#" class="nav-item" data-page="pricing-rules">
                         <i class="fas fa-pound-sign"></i>
@@ -81,17 +131,11 @@
                         <i class="fas fa-chevron-down submenu-arrow"></i>
                     </div>
                     <div class="submenu" id="decoration-submenu">
-                        <a href="#" class="nav-item sub" data-page="dtf">
-                            <span>Full Color Printing (DTF)</span>
+                        <a href="#" class="nav-item sub" data-page="decoration-processes-list">
+                            <span>Decoration Processes List</span>
                         </a>
-                        <a href="#" class="nav-item sub" data-page="digital">
-                            <span>Digital Printing</span>
-                        </a>
-                        <a href="#" class="nav-item sub" data-page="embroidery">
-                            <span>Embroidery</span>
-                        </a>
-                        <a href="#" class="nav-item sub" data-page="screen">
-                            <span>Screen Printing</span>
+                        <a href="#" class="nav-item sub" data-page="decoration-pricing">
+                            <span>Decoration Pricing</span>
                         </a>
                     </div>
 
@@ -325,6 +369,62 @@
                     <!-- Content will be loaded by JS -->
                 </div>
 
+                <div class="page" id="page-suppliers-in-use">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-supplier-markup">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-supplier-account-details">
+                    <div class="coming-soon">
+                        <i class="fas fa-tools"></i>
+                        <h2>Supplier Account Details</h2>
+                        <p>Manage supplier credentials and integrations. Coming soon!</p>
+                    </div>
+                </div>
+
+                <div class="page" id="page-decoration-areas">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-volume-discounts">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-sizes">
+                    <div class="coming-soon">
+                        <i class="fas fa-tools"></i>
+                        <h2>Sizes</h2>
+                        <p>Configure sizing charts and mapping. Coming soon!</p>
+                    </div>
+                </div>
+
+                <div class="page" id="page-custom-fields">
+                    <div class="coming-soon">
+                        <i class="fas fa-tools"></i>
+                        <h2>Custom Fields</h2>
+                        <p>Manage custom fields for products. Coming soon!</p>
+                    </div>
+                </div>
+
+                <div class="page" id="page-bulk-product-display">
+                    <div class="coming-soon">
+                        <i class="fas fa-tools"></i>
+                        <h2>Bulk Product Display</h2>
+                        <p>Configure bulk display rules. Coming soon!</p>
+                    </div>
+                </div>
+
+                <div class="page" id="page-inventory-settings">
+                    <div class="coming-soon">
+                        <i class="fas fa-tools"></i>
+                        <h2>Inventory Settings</h2>
+                        <p>Configure inventory visibility and sync. Coming soon!</p>
+                    </div>
+                </div>
+
                 <!-- Other Pages (Coming Soon) -->
                 <div class="page" id="page-categories">
                     <!-- Content will be loaded by JS -->
@@ -335,11 +435,27 @@
                 </div>
 
                 <div class="page" id="page-product-groups">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-stock-designs-list">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-stock-design-collections">
                     <div class="coming-soon">
                         <i class="fas fa-tools"></i>
-                        <h2>Product Groups</h2>
-                        <p>Manage Best Sellers, Specials, and custom groups. Coming soon!</p>
+                        <h2>Stock Design Collections</h2>
+                        <p>Manage design collections. Coming soon!</p>
                     </div>
+                </div>
+
+                <div class="page" id="page-decoration-processes-list">
+                    <!-- Content will be loaded by JS -->
+                </div>
+
+                <div class="page" id="page-decoration-pricing">
+                    <!-- Content will be loaded by JS -->
                 </div>
 
                 <div class="page" id="page-pricing-rules">
@@ -391,6 +507,14 @@
     <script src="js/modal.js"></script>
     <script src="js/product-detail.js"></script>
     <script src="js/products.js"></script>
+    <script src="js/suppliers-in-use.js"></script>
+    <script src="js/supplier-markup.js"></script>
+    <script src="js/decoration-areas.js"></script>
+    <script src="js/volume-discounts.js"></script>
+    <script src="js/product-groups.js"></script>
+    <script src="js/stock-designs.js"></script>
+    <script src="js/decoration-processes.js"></script>
+    <script src="js/decoration-pricing.js"></script>
     <script src="js/brands.js"></script>
     <script src="js/categories.js"></script>
     <script src="js/charts.js"></script>

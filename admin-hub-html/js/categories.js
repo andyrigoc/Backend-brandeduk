@@ -297,6 +297,13 @@ function renderCategoryProductCard(product) {
     const image = product.image || product.primaryImage || '';
     const price = product.priceRange?.min || product.minPrice || null;
     const brand = product.brand || '';
+    const colors = product.colors || product.colourVariants || [];
+
+    // Cache summary for modal consistency (same image/price as the card)
+    if (code && code !== 'N/A') {
+        window.__productSummaryCache = window.__productSummaryCache || {};
+        window.__productSummaryCache[String(code).toUpperCase()] = product;
+    }
     
     return `
         <div class="product-card" onclick="openProductModal('${code}')">
@@ -311,6 +318,16 @@ function renderCategoryProductCard(product) {
                 <div class="product-card-name">${truncateCatText(name, 40)}</div>
                 ${brand ? `<div class="product-card-brand">${brand}</div>` : ''}
                 <div class="product-card-price">${formatCatPrice(price)}</div>
+                ${colors.length ? `
+                    <div class="product-card-colors">
+                        ${colors.slice(0, 5).map(color => {
+                            const colorName = typeof color === 'string' ? color : (color.name || color.colour || color.primaryColour || color.color || '');
+                            const css = window.COLOR_UTILS?.toCss ? window.COLOR_UTILS.toCss(colorName) : '#d1d5db';
+                            return `<span class="color-dot" title="${colorName}" style="background:${css}"></span>`;
+                        }).join('')}
+                        ${colors.length > 5 ? `<span class="color-more">+${colors.length - 5}</span>` : ''}
+                    </div>
+                ` : ''}
             </div>
         </div>
     `;

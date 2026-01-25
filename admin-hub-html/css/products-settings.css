@@ -1,0 +1,270 @@
+/* ========================================
+   Products Settings Pages (DecoNetwork-style)
+   ======================================== */
+
+.settings-page {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.settings-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.settings-body {
+    padding: 20px;
+}
+
+.settings-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.settings-note {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.card + .card {
+    margin-top: 14px;
+}
+
+.card-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-header h3 {
+    font-size: 14px;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.card-body {
+    padding: 16px;
+}
+
+.input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.10);
+}
+
+.input-sm {
+    padding: 7px 8px;
+    font-size: 13px;
+}
+
+.input-group {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
+}
+
+.input-group .addon {
+    padding: 8px 10px;
+    background: var(--bg);
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.input-group .input {
+    border: none;
+    border-radius: 0;
+    width: 100px;
+}
+
+.radio-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.radio-item input {
+    margin-top: 3px;
+}
+
+.radio-title {
+    font-weight: 600;
+}
+
+.table-wrap {
+    width: 100%;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 760px;
+}
+
+.table th,
+.table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.table th {
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table .actions {
+    width: 90px;
+    text-align: right;
+}
+
+.btn-link {
+    color: var(--info);
+    font-size: 13px;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+.pill-id {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f59e0b;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 34px;
+}
+
+.icon-cell {
+    width: 34px;
+    text-align: center;
+    color: #111827;
+    opacity: 0.8;
+}
+
+.checkbox-cell {
+    width: 44px;
+}
+
+.process-cell {
+    width: 56px;
+    text-align: center;
+}
+
+.dim-cell {
+    width: 130px;
+}
+
+.drag-handle {
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: grab;
+    user-select: none;
+}
+
+/* Decoration Areas main list */
+.decoration-list {
+    width: 100%;
+}
+
+.decoration-list .table {
+    min-width: 920px;
+}
+
+.decoration-area-summary {
+    color: var(--text-secondary);
+    font-size: 13px;
+    max-width: 680px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Modal tweaks for editor */
+.modal-container.modal-xl .modal-body {
+    padding: 16px;
+}
+
+.modal-container.modal-xl .modal-header {
+    padding: 16px 18px;
+}
+
+.editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.editor-toolbar .settings-note {
+    margin: 0;
+}
+
+@media (max-width: 720px) {
+    .table {
+        min-width: 980px;
+    }
+}
