@@ -281,12 +281,11 @@ router.get('/brands', async (req, res) => {
         b.id,
         b.name,
         b.slug,
-        b.logo_url,
         COUNT(DISTINCT s.style_code) as product_count
       FROM brands b
       INNER JOIN styles s ON b.id = s.brand_id
       INNER JOIN products p ON s.style_code = p.style_code AND p.sku_status = 'Live'
-      GROUP BY b.id, b.name, b.slug, b.logo_url
+      GROUP BY b.id, b.name, b.slug
       HAVING COUNT(DISTINCT s.style_code) > 0
       ORDER BY b.name ASC
     `;
@@ -314,7 +313,6 @@ router.get('/brands', async (req, res) => {
         id: row.id,
         name: row.name,
         slug: row.slug,
-        logoUrl: row.logo_url,
         count: count,
         percentage: percentage + '%'
       };
