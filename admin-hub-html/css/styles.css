@@ -9,15 +9,15 @@
     --primary-light: #2c5282;
     --primary-dark: #1a202c;
     
-    /* Accent Colors - BrandedUK Fuchsia/Magenta */
-    --accent: #E91E8C;
-    --accent-light: #FF4DB8;
-    --accent-dark: #C2185B;
+    /* Accent Colors - BrandedUK Purple */
+    --accent: #7C3AED;
+    --accent-light: #A78BFA;
+    --accent-dark: #5B21B6;
     
     /* Sidebar Colors */
     --sidebar-bg: #1a202c;
     --sidebar-hover: #2d3748;
-    --sidebar-active: #E91E8C;
+    --sidebar-active: var(--accent);
     --sidebar-text: #a0aec0;
     --sidebar-text-active: #ffffff;
     
