@@ -1163,7 +1163,7 @@ async function buildProductListQuery(filters, page, limit) {
   // Construct ORDER BY clause - prioritize custom display_order if exists
   // Products in product_display_order table will appear first, ordered by display_order
   // Then remaining products ordered by the standard sort
-  const orderByClause = sort === 'price' ? `sell_price ${order}, product_type_priority ASC` : sort === 'name' ? `style_name ${order}, product_type_priority ASC` : sort === 'brand' ? `brand_name ${order}, product_type_priority ASC` : sort === 'code' ? `style_code ${order}, product_type_priority ASC` : `product_type_priority ASC, created_at ${order}`;
+  const orderByClause = sort === 'price' ? `sell_price ${order}, product_type_priority ASC` : sort === 'name' ? `style_name ${order}, product_type_priority ASC` : sort === 'brand' ? `brand_name ${order}, product_type_priority ASC` : sort === 'code' ? `style_code ${order}, product_type_priority ASC` : `COALESCE(pdo.display_order, 999999) ASC, product_type_priority ASC, created_at ${order}`;
   
   // ULTRA-OPTIMIZATION: Restructure query for search - use indexed operations first
   // For search, prioritize full-text search index by structuring query properly
@@ -1262,8 +1262,7 @@ async function buildProductListQuery(filters, page, limit) {
             MIN(p.sell_price) as sell_price,
             MIN(${viewAlias}.created_at) as created_at,
             MIN(COALESCE(pt.display_order, 999)) as product_type_priority,
-            MIN(COALESCE(b.name, '')) as brand_name,
-            MIN(pdo.display_order) as custom_display_order
+            MIN(COALESCE(b.name, '')) as brand_name
             ${hasSearch ? ', MAX(scf.relevance_score) as relevance_score' : ''}
           FROM style_codes_filtered scf
           INNER JOIN product_search_materialized ${viewAlias} ON scf.style_code = ${viewAlias}.style_code
@@ -1271,7 +1270,6 @@ async function buildProductListQuery(filters, page, limit) {
           LEFT JOIN styles s ON ${viewAlias}.style_code = s.style_code
       LEFT JOIN product_types pt ON s.product_type_id = pt.id
             LEFT JOIN brands b ON s.brand_id = b.id
-          LEFT JOIN product_display_order pdo ON scf.style_code = pdo.style_code AND pdo.active = true
           WHERE ${viewAlias}.sku_status = 'Live'
           GROUP BY scf.style_code
           HAVING 
@@ -1280,17 +1278,16 @@ async function buildProductListQuery(filters, page, limit) {
             ${filters.priceMax !== null && filters.priceMax !== undefined ? `AND MIN(p.sell_price) <= $${priceFilterParamIndex + (filters.priceMin !== null && filters.priceMin !== undefined ? 1 : 0)}` : ''}
         ),
         paginated_style_codes AS (
-      SELECT style_code, sell_price, custom_display_order
+      SELECT style_code, sell_price
           FROM style_codes_with_meta
       ORDER BY 
         ${hasSearch && searchRelevanceOrder ? `${searchRelevanceOrder}, ` : ''}
-        COALESCE(custom_display_order, 999999) ASC, ${orderByClause}
+        ${orderByClause}
       LIMIT $${limitParamIndex} OFFSET $${offsetParamIndex}
     )
     SELECT 
           psc.style_code,
           psc.sell_price as sorted_sell_price,
-          psc.custom_display_order,
           $${params.length + 1}::bigint as total,
           $${params.length + 2}::numeric as min_price,
           $${params.length + 3}::numeric as max_price

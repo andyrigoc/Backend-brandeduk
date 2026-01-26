@@ -860,8 +860,7 @@ function selectBulkAction(action, event) {
         'export': 'Export Products',
         'availability': 'Set Availability',
         'categories': 'Modify Categories',
-        'group': 'Assign Product Group',
-        'to-top': 'Move to Top (Recommended)'
+        'group': 'Assign Product Group'
     };
     
     const label = document.getElementById('bulkActionLabel');
@@ -876,7 +875,7 @@ function selectBulkAction(action, event) {
 /**
  * Apply Selected Bulk Action
  */
-async function applySelectedBulkAction() {
+function applySelectedBulkAction() {
     if (!selectedBulkAction) {
         showNotification('Please select a bulk action first', 'warning');
         return;
@@ -884,15 +883,6 @@ async function applySelectedBulkAction() {
     
     if (selectedProducts.length === 0) {
         showNotification('Please select at least one product', 'warning');
-        return;
-    }
-
-    // Handle to-top action specially
-    if (selectedBulkAction === 'to-top') {
-        await moveSelectedToTop();
-        selectedBulkAction = null;
-        const label = document.getElementById('bulkActionLabel');
-        if (label) label.textContent = 'Choose Bulk Action';
         return;
     }
     
@@ -983,88 +973,6 @@ function showNotification(message, type = 'info') {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
-}
-
-/**
- * Move Product Up in display order
- */
-async function moveProductUp(styleCode) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/product-order/move`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleCode, direction: 'up' })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Product moved up', 'success');
-            await loadProducts();
-        } else {
-            showNotification(result.message || 'Failed to move product', 'warning');
-        }
-    } catch (error) {
-        console.error('Move up error:', error);
-        showNotification('Failed to move product: ' + error.message, 'error');
-    }
-}
-
-/**
- * Move Product Down in display order
- */
-async function moveProductDown(styleCode) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/product-order/move`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleCode, direction: 'down' })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Product moved down', 'success');
-            await loadProducts();
-        } else {
-            showNotification(result.message || 'Failed to move product', 'warning');
-        }
-    } catch (error) {
-        console.error('Move down error:', error);
-        showNotification('Failed to move product: ' + error.message, 'error');
-    }
-}
-
-/**
- * Move Selected Products to Top (Recommended)
- */
-async function moveSelectedToTop() {
-    if (selectedProducts.length === 0) {
-        showNotification('Please select products first', 'warning');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/product-order/to-top`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleCodes: selectedProducts })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification(`${selectedProducts.length} product(s) moved to top! They will appear as Recommended.`, 'success');
-            selectedProducts = [];
-            updateBulkActionsBar();
-            await loadProducts();
-        } else {
-            showNotification(result.message || 'Failed to move products', 'error');
-        }
-    } catch (error) {
-        console.error('Move to top error:', error);
-        showNotification('Failed to move products: ' + error.message, 'error');
-    }
 }
 
 /**

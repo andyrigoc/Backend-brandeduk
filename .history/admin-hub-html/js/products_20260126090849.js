@@ -860,8 +860,7 @@ function selectBulkAction(action, event) {
         'export': 'Export Products',
         'availability': 'Set Availability',
         'categories': 'Modify Categories',
-        'group': 'Assign Product Group',
-        'to-top': 'Move to Top (Recommended)'
+        'group': 'Assign Product Group'
     };
     
     const label = document.getElementById('bulkActionLabel');
@@ -876,7 +875,7 @@ function selectBulkAction(action, event) {
 /**
  * Apply Selected Bulk Action
  */
-async function applySelectedBulkAction() {
+function applySelectedBulkAction() {
     if (!selectedBulkAction) {
         showNotification('Please select a bulk action first', 'warning');
         return;
@@ -884,15 +883,6 @@ async function applySelectedBulkAction() {
     
     if (selectedProducts.length === 0) {
         showNotification('Please select at least one product', 'warning');
-        return;
-    }
-
-    // Handle to-top action specially
-    if (selectedBulkAction === 'to-top') {
-        await moveSelectedToTop();
-        selectedBulkAction = null;
-        const label = document.getElementById('bulkActionLabel');
-        if (label) label.textContent = 'Choose Bulk Action';
         return;
     }
     

@@ -1163,7 +1163,7 @@ async function buildProductListQuery(filters, page, limit) {
   // Construct ORDER BY clause - prioritize custom display_order if exists
   // Products in product_display_order table will appear first, ordered by display_order
   // Then remaining products ordered by the standard sort
-  const orderByClause = sort === 'price' ? `sell_price ${order}, product_type_priority ASC` : sort === 'name' ? `style_name ${order}, product_type_priority ASC` : sort === 'brand' ? `brand_name ${order}, product_type_priority ASC` : sort === 'code' ? `style_code ${order}, product_type_priority ASC` : `product_type_priority ASC, created_at ${order}`;
+  const orderByClause = sort === 'price' ? `sell_price ${order}, product_type_priority ASC` : sort === 'name' ? `style_name ${order}, product_type_priority ASC` : sort === 'brand' ? `brand_name ${order}, product_type_priority ASC` : sort === 'code' ? `style_code ${order}, product_type_priority ASC` : `COALESCE(pdo.display_order, 999999) ASC, product_type_priority ASC, created_at ${order}`;
   
   // ULTRA-OPTIMIZATION: Restructure query for search - use indexed operations first
   // For search, prioritize full-text search index by structuring query properly

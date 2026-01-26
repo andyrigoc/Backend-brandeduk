@@ -105,7 +105,6 @@ app.use('/api/filters', filtersRoutes);
 app.use('/api/quotes', quotesRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/pricing-rules', pricingRulesRoutes);
-app.use('/api/product-order', productOrderRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {

@@ -31,7 +31,7 @@ let supplierMarkupSaved = cloneConfig(DEFAULT_MARKUP_CONFIG);
 let isSaving = false;
 
 function initSupplierMarkupPage() {
-    loadSupplierMarkupConfigFromAPI();
+    loadSupplierMarkupConfig();
 
     const container = document.getElementById('page-supplier-markup');
     if (!container) return;
@@ -57,18 +57,7 @@ function initSupplierMarkupPage() {
             </div>
 
             <div class="settings-body">
-                <div id="markupLoadingState" style="display:none; text-align:center; padding:40px;">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p>Loading pricing rules from server...</p>
-                </div>
-                
-                <div id="markupErrorState" style="display:none; text-align:center; padding:40px; color:#e74c3c;">
-                    <i class="fas fa-exclamation-triangle fa-2x"></i>
-                    <p id="markupErrorMessage">Failed to load pricing rules</p>
-                    <button class="btn btn-primary" id="retryLoadBtn"><i class="fas fa-redo"></i> Retry</button>
-                </div>
-
-                <div id="markupContent" class="card">
+                <div class="card">
                     <div class="card-header">
                         <h3>Mode</h3>
                         <div class="settings-note">Choose Fixed or Tiered markup.</div>
@@ -131,23 +120,13 @@ function wireMarkupEvents(container) {
         radio.addEventListener('change', () => {
             supplierMarkupState.mode = radio.value;
             refreshMarkupUI();
-            resetSaveButton();
         });
     });
 
     const saveBtn = container.querySelector('#saveMarkupBtn');
     const cancelBtn = container.querySelector('#cancelMarkupBtn');
-    const retryBtn = container.querySelector('#retryLoadBtn');
 
-    if (retryBtn) {
-        retryBtn.addEventListener('click', () => {
-            loadSupplierMarkupConfigFromAPI();
-        });
-    }
-
-    saveBtn.addEventListener('click', async () => {
-        if (isSaving) return;
-        
+    saveBtn.addEventListener('click', () => {
         // Basic validation
         if (supplierMarkupState.mode === 'fixed') {
             const p = Number(supplierMarkupState.fixedPercent);
@@ -164,62 +143,9 @@ function wireMarkupEvents(container) {
             }
         }
 
-        // Save to API
-        isSaving = true;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        saveBtn.style.backgroundColor = '';
-        saveBtn.style.borderColor = '';
-
-        try {
-            const response = await fetch(PRICING_RULES_API, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    mode: supplierMarkupState.mode,
-                    fixedPercent: supplierMarkupState.fixedPercent,
-                    tiers: supplierMarkupState.tiers
-                })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Failed to save pricing rules');
-            }
-
-            // Also save to localStorage as backup
-            localStorage.setItem(SUPPLIER_MARKUP_STORAGE_KEY, JSON.stringify(supplierMarkupState));
-            supplierMarkupSaved = cloneConfig(supplierMarkupState);
-            
-            // Success - make button green
-            saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
-            saveBtn.style.backgroundColor = '#27ae60';
-            saveBtn.style.borderColor = '#27ae60';
-            
-            showToast(`Markup saved successfully! ${result.count} rules updated.`, 'success');
-
-            // Reset button after 3 seconds
-            setTimeout(() => {
-                resetSaveButton();
-            }, 3000);
-
-        } catch (error) {
-            console.error('[MARKUP] Save error:', error);
-            saveBtn.innerHTML = '<i class="fas fa-times"></i> Error';
-            saveBtn.style.backgroundColor = '#e74c3c';
-            saveBtn.style.borderColor = '#e74c3c';
-            showToast(`Failed to save: ${error.message}`, 'error');
-
-            setTimeout(() => {
-                resetSaveButton();
-            }, 3000);
-        } finally {
-            isSaving = false;
-            saveBtn.disabled = false;
-        }
+        localStorage.setItem(SUPPLIER_MARKUP_STORAGE_KEY, JSON.stringify(supplierMarkupState));
+        supplierMarkupSaved = cloneConfig(supplierMarkupState);
+        showToast('Markup saved.', 'success');
     });
 
     cancelBtn.addEventListener('click', () => {
@@ -329,53 +255,7 @@ function renderTierRow(tier, idx) {
     `;
 }
 
-function loadSupplierMarkupConfigFromAPI() {
-    const loadingEl = document.getElementById('markupLoadingState');
-    const errorEl = document.getElementById('markupErrorState');
-    const contentEl = document.getElementById('markupContent');
-
-    if (loadingEl) loadingEl.style.display = 'block';
-    if (errorEl) errorEl.style.display = 'none';
-    if (contentEl) contentEl.style.display = 'none';
-
-    fetch(PRICING_RULES_API)
-        .then(response => {
-            if (!response.ok) throw new Error('API request failed');
-            return response.json();
-        })
-        .then(result => {
-            if (result.success && result.data && result.data.length > 0) {
-                supplierMarkupState = {
-                    mode: 'tiered',
-                    fixedPercent: 80,
-                    tiers: result.data.map(tier => ({
-                        from: tier.from,
-                        to: tier.to,
-                        percent: tier.percent
-                    }))
-                };
-                supplierMarkupSaved = cloneConfig(supplierMarkupState);
-                console.log('[MARKUP] Loaded', result.data.length, 'pricing rules from API');
-            } else {
-                // Use localStorage fallback or defaults
-                loadSupplierMarkupConfigFromLocal();
-            }
-            
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (contentEl) contentEl.style.display = 'block';
-            renderTiersTable();
-        })
-        .catch(error => {
-            console.warn('[MARKUP] API load failed, using localStorage:', error.message);
-            loadSupplierMarkupConfigFromLocal();
-            
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (contentEl) contentEl.style.display = 'block';
-            renderTiersTable();
-        });
-}
-
-function loadSupplierMarkupConfigFromLocal() {
+function loadSupplierMarkupConfig() {
     supplierMarkupState = cloneConfig(DEFAULT_MARKUP_CONFIG);
     supplierMarkupSaved = cloneConfig(DEFAULT_MARKUP_CONFIG);
 
@@ -392,16 +272,6 @@ function loadSupplierMarkupConfigFromLocal() {
         }
     } catch {
         // ignore
-    }
-}
-
-function resetSaveButton() {
-    const saveBtn = document.getElementById('saveMarkupBtn');
-    if (saveBtn) {
-        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save';
-        saveBtn.style.backgroundColor = '';
-        saveBtn.style.borderColor = '';
-        saveBtn.disabled = false;
     }
 }
 

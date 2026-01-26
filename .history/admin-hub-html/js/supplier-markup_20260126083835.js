@@ -329,53 +329,7 @@ function renderTierRow(tier, idx) {
     `;
 }
 
-function loadSupplierMarkupConfigFromAPI() {
-    const loadingEl = document.getElementById('markupLoadingState');
-    const errorEl = document.getElementById('markupErrorState');
-    const contentEl = document.getElementById('markupContent');
-
-    if (loadingEl) loadingEl.style.display = 'block';
-    if (errorEl) errorEl.style.display = 'none';
-    if (contentEl) contentEl.style.display = 'none';
-
-    fetch(PRICING_RULES_API)
-        .then(response => {
-            if (!response.ok) throw new Error('API request failed');
-            return response.json();
-        })
-        .then(result => {
-            if (result.success && result.data && result.data.length > 0) {
-                supplierMarkupState = {
-                    mode: 'tiered',
-                    fixedPercent: 80,
-                    tiers: result.data.map(tier => ({
-                        from: tier.from,
-                        to: tier.to,
-                        percent: tier.percent
-                    }))
-                };
-                supplierMarkupSaved = cloneConfig(supplierMarkupState);
-                console.log('[MARKUP] Loaded', result.data.length, 'pricing rules from API');
-            } else {
-                // Use localStorage fallback or defaults
-                loadSupplierMarkupConfigFromLocal();
-            }
-            
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (contentEl) contentEl.style.display = 'block';
-            renderTiersTable();
-        })
-        .catch(error => {
-            console.warn('[MARKUP] API load failed, using localStorage:', error.message);
-            loadSupplierMarkupConfigFromLocal();
-            
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (contentEl) contentEl.style.display = 'block';
-            renderTiersTable();
-        });
-}
-
-function loadSupplierMarkupConfigFromLocal() {
+function loadSupplierMarkupConfig() {
     supplierMarkupState = cloneConfig(DEFAULT_MARKUP_CONFIG);
     supplierMarkupSaved = cloneConfig(DEFAULT_MARKUP_CONFIG);
 
@@ -392,16 +346,6 @@ function loadSupplierMarkupConfigFromLocal() {
         }
     } catch {
         // ignore
-    }
-}
-
-function resetSaveButton() {
-    const saveBtn = document.getElementById('saveMarkupBtn');
-    if (saveBtn) {
-        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save';
-        saveBtn.style.backgroundColor = '';
-        saveBtn.style.borderColor = '';
-        saveBtn.disabled = false;
     }
 }
 

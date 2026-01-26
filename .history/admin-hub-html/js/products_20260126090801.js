@@ -370,7 +370,7 @@ function renderProducts() {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="15" class="empty-cell">
+                <td colspan="9" class="empty-cell">
                     <div class="empty-content">
                         <i class="fas fa-box-open"></i>
                         <h3>No products found</h3>
@@ -384,7 +384,7 @@ function renderProducts() {
     
     window.__productSummaryCache = window.__productSummaryCache || {};
 
-    tbody.innerHTML = products.map((product, index) => {
+    tbody.innerHTML = products.map(product => {
         const code = product.code || product.styleCode || 'N/A';
         const name = product.name || product.styleName || 'Unnamed Product';
         const brand = product.brand || 'N/A';
@@ -397,8 +397,6 @@ function renderProducts() {
         const htvPrice = getProcessPrice(product, 'htv');
         const dtfPrice = getProcessPrice(product, 'dtf');
         const colors = product.colors || product.colourVariants || [];
-        const displayOrder = product.displayOrder || ((currentPage - 1) * perPage + index + 1);
-        const isRecommended = displayOrder <= 15 && currentPage === 1 && currentCategory === 'all' && !searchQuery;
 
         // Cache summary for cross-page modal usage
         if (code && code !== 'N/A') {
@@ -406,25 +404,12 @@ function renderProducts() {
         }
         
         return `
-            <tr class="${selectedProducts.includes(code) ? 'selected' : ''} ${isRecommended ? 'recommended-row' : ''}" data-code="${code}" data-order="${displayOrder}">
+            <tr class="${selectedProducts.includes(code) ? 'selected' : ''}" data-code="${code}">
                 <td>
                     <div class="checkbox-wrapper">
                         <input type="checkbox" 
                                ${selectedProducts.includes(code) ? 'checked' : ''}
                                onchange="toggleProductSelect('${code}', this.checked)">
-                    </div>
-                </td>
-                <td class="order-cell">
-                    <div class="order-controls">
-                        <button class="order-btn order-up" onclick="moveProductUp('${code}')" title="Move up">
-                            <i class="fas fa-chevron-up"></i>
-                        </button>
-                        <span class="order-number ${isRecommended ? 'recommended' : ''}" title="${isRecommended ? 'Recommended (Top 15)' : 'Position ' + displayOrder}">
-                            ${isRecommended ? '<i class="fas fa-star"></i>' : ''} ${displayOrder}
-                        </span>
-                        <button class="order-btn order-down" onclick="moveProductDown('${code}')" title="Move down">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
                     </div>
                 </td>
                 <td>
@@ -860,8 +845,7 @@ function selectBulkAction(action, event) {
         'export': 'Export Products',
         'availability': 'Set Availability',
         'categories': 'Modify Categories',
-        'group': 'Assign Product Group',
-        'to-top': 'Move to Top (Recommended)'
+        'group': 'Assign Product Group'
     };
     
     const label = document.getElementById('bulkActionLabel');
@@ -876,7 +860,7 @@ function selectBulkAction(action, event) {
 /**
  * Apply Selected Bulk Action
  */
-async function applySelectedBulkAction() {
+function applySelectedBulkAction() {
     if (!selectedBulkAction) {
         showNotification('Please select a bulk action first', 'warning');
         return;
@@ -884,15 +868,6 @@ async function applySelectedBulkAction() {
     
     if (selectedProducts.length === 0) {
         showNotification('Please select at least one product', 'warning');
-        return;
-    }
-
-    // Handle to-top action specially
-    if (selectedBulkAction === 'to-top') {
-        await moveSelectedToTop();
-        selectedBulkAction = null;
-        const label = document.getElementById('bulkActionLabel');
-        if (label) label.textContent = 'Choose Bulk Action';
         return;
     }
     
@@ -983,88 +958,6 @@ function showNotification(message, type = 'info') {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
-}
-
-/**
- * Move Product Up in display order
- */
-async function moveProductUp(styleCode) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/product-order/move`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleCode, direction: 'up' })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Product moved up', 'success');
-            await loadProducts();
-        } else {
-            showNotification(result.message || 'Failed to move product', 'warning');
-        }
-    } catch (error) {
-        console.error('Move up error:', error);
-        showNotification('Failed to move product: ' + error.message, 'error');
-    }
-}
-
-/**
- * Move Product Down in display order
- */
-async function moveProductDown(styleCode) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/product-order/move`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleCode, direction: 'down' })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Product moved down', 'success');
-            await loadProducts();
-        } else {
-            showNotification(result.message || 'Failed to move product', 'warning');
-        }
-    } catch (error) {
-        console.error('Move down error:', error);
-        showNotification('Failed to move product: ' + error.message, 'error');
-    }
-}
-
-/**
- * Move Selected Products to Top (Recommended)
- */
-async function moveSelectedToTop() {
-    if (selectedProducts.length === 0) {
-        showNotification('Please select products first', 'warning');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/product-order/to-top`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleCodes: selectedProducts })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification(`${selectedProducts.length} product(s) moved to top! They will appear as Recommended.`, 'success');
-            selectedProducts = [];
-            updateBulkActionsBar();
-            await loadProducts();
-        } else {
-            showNotification(result.message || 'Failed to move products', 'error');
-        }
-    } catch (error) {
-        console.error('Move to top error:', error);
-        showNotification('Failed to move products: ' + error.message, 'error');
-    }
 }
 
 /**
