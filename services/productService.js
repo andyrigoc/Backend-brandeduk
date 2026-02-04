@@ -1191,7 +1191,7 @@ async function buildProductListQuery(filters, page, limit) {
       LEFT JOIN styles s ON ${viewAlias}.style_code = s.style_code
         LEFT JOIN product_types pt ON s.product_type_id = pt.id
         LEFT JOIN brands b ON s.brand_id = b.id
-      LEFT JOIN product_display_order pdo ON scf.style_code = pdo.style_code AND pdo.active = true
+      LEFT JOIN product_display_order pdo ON scf.style_code = pdo.style_code
       WHERE ${viewAlias}.sku_status = 'Live'
       GROUP BY scf.style_code
       HAVING 
@@ -1271,7 +1271,7 @@ async function buildProductListQuery(filters, page, limit) {
           LEFT JOIN styles s ON ${viewAlias}.style_code = s.style_code
       LEFT JOIN product_types pt ON s.product_type_id = pt.id
             LEFT JOIN brands b ON s.brand_id = b.id
-          LEFT JOIN product_display_order pdo ON scf.style_code = pdo.style_code AND pdo.active = true
+          LEFT JOIN product_display_order pdo ON scf.style_code = pdo.style_code
           WHERE ${viewAlias}.sku_status = 'Live'
           GROUP BY scf.style_code
           HAVING 

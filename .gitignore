@@ -13,3 +13,6 @@ DigitalOcean_BrandedUk
 ProductDataFull.csv
 
 .env
+
+# VS Code local history
+.history/
