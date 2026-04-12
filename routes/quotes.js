@@ -310,17 +310,46 @@ router.post('/', upload.any(), async (req, res) => {
       })),
 
       customizations: Array.isArray(customizations)
-        ? customizations.map(c => ({
-            position: c.position,
-            method: c.method,
-            type: c.type,
-            hasLogo: c.hasLogo || logoFiles[c.position?.toLowerCase().replace(/\s+/g, '-')] !== undefined,
-            logo: c.logo || null,
-            text: c.text ?? null,
-            unitPrice: c.unitPrice,
-            lineTotal: c.lineTotal,
-            quantity: c.quantity,
-          }))
+        ? customizations.map(c => {
+            let logoValue = c.logo || null;
+            
+            // If logo is base64, save to disk and convert to public URL
+            if (logoValue && logoValue.startsWith('data:')) {
+              try {
+                const matches = logoValue.match(/data:([^;]+);base64,(.+)/);
+                if (matches) {
+                  const mimeType = matches[1];
+                  const base64Data = matches[2];
+                  const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+                  const posSlug = (c.position || 'unknown').replace(/\s+/g, '-').toLowerCase();
+                  const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                  const filename = `logo-${posSlug}-${uniqueSuffix}.${ext}`;
+                  const filePath = path.join(uploadsDir, filename);
+                  
+                  fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+                  
+                  const baseUrl = process.env.BASE_URL || `https://api.brandeduk.com`;
+                  logoValue = `${baseUrl}/uploads/logos/${filename}`;
+                  console.log(`[QUOTES] Saved base64 logo to: ${logoValue}`);
+                }
+              } catch (saveErr) {
+                console.error(`[QUOTES] Failed to save base64 logo:`, saveErr.message);
+                // Keep original base64 as fallback
+              }
+            }
+            
+            return {
+              position: c.position,
+              method: c.method,
+              type: c.type,
+              hasLogo: c.hasLogo || logoFiles[c.position?.toLowerCase().replace(/\s+/g, '-')] !== undefined,
+              logo: logoValue,
+              text: c.text ?? null,
+              unitPrice: c.unitPrice,
+              lineTotal: c.lineTotal,
+              quantity: c.quantity,
+            };
+          })
         : [],
 
       notes: Array.isArray(notes) ? notes : [],

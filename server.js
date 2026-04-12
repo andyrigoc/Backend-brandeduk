@@ -107,6 +107,9 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/pricing-rules', pricingRulesRoutes);
 app.use('/api/product-order', productOrderRoutes);
 
+// Serve uploaded logos as static files
+app.use('/uploads/logos', express.static(path.join(__dirname, 'uploads', 'logos')));
+
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
   customCss: `

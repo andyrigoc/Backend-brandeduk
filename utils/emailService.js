@@ -114,15 +114,7 @@ function generateQuoteEmailHTML(data) {
       // Build logo preview HTML
       let logoHTML = '';
       if (c.logo) {
-        if (c.logo.startsWith('data:')) {
-          // Base64 logo - can't inline in email, reference attachment
-          const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
-          const ext = c.logo.startsWith('data:image/png') ? 'png' : 'jpg';
-          logoHTML = `<br><span style="color:#7c3aed;font-size:13px;">📎 Logo allegato: <strong>logo-${escapeHtml(posSlug)}.${ext}</strong></span>`;
-        } else {
-          // CDN URL logo - can display inline
-          logoHTML = `<br><img src="${escapeHtml(c.logo)}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"><br><a href="${escapeHtml(c.logo)}" target="_blank" style="color: #7c3aed; font-size: 12px;">Download Logo</a>`;
-        }
+        logoHTML = `<br><img src="${escapeHtml(c.logo)}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"><br><a href="${escapeHtml(c.logo)}" target="_blank" style="color: #7c3aed; font-size: 12px;">Download Logo</a>`;
       }
 
       customizationsHTML += `
@@ -214,15 +206,7 @@ function generateQuoteEmailHTML(data) {
   if (logosWithData.length > 0) {
     html += `<div class="section"><h2>🖼 Uploaded Logos</h2><table>`;
     logosWithData.forEach(c => {
-      let imgTag;
-      if (c.logo.startsWith('data:')) {
-        // Base64 logo - reference the attachment by filename
-        const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
-        const ext = c.logo.startsWith('data:image/png') ? 'png' : 'jpg';
-        imgTag = `<span style="color:#7c3aed;">📎 See attached file: <strong>logo-${escapeHtml(posSlug)}.${ext}</strong></span>`;
-      } else {
-        imgTag = `<a href="${escapeHtml(c.logo)}" target="_blank">View Logo</a><br><img src="${escapeHtml(c.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
-      }
+      const imgTag = `<a href="${escapeHtml(c.logo)}" target="_blank">View Logo</a><br><img src="${escapeHtml(c.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
       html += `<tr><td class="label"><strong>${escapeHtml(c.position || 'Unknown')}:</strong></td><td class="value">${imgTag}</td></tr>`;
     });
     html += `</table></div>`;
@@ -273,22 +257,28 @@ async function sendQuoteEmail(data) {
   try {
     const html = generateQuoteEmailHTML(data);
 
-    // Extract base64 logos as attachments
+    // Extract logos as attachments (from URLs saved on disk)
     const customizations = data.customizations || [];
     const logoAttachments = [];
-    customizations.forEach((c, i) => {
-      if (c.logo && c.logo.startsWith('data:')) {
-        const matches = c.logo.match(/data:([^;]+);base64,(.+)/);
-        if (matches) {
-          const ext = matches[1] === 'image/png' ? 'png' : 'jpg';
-          logoAttachments.push({
-            filename: `logo-${(c.position || 'unknown').replace(/\s+/g, '-')}.${ext}`,
-            content: matches[2],
-            encoding: 'base64',
-          });
+    for (const c of customizations) {
+      if (c.logo && c.logo.includes('/uploads/logos/')) {
+        try {
+          const filename = c.logo.split('/').pop();
+          const filePath = require('path').join(__dirname, '..', 'uploads', 'logos', filename);
+          if (require('fs').existsSync(filePath)) {
+            const content = require('fs').readFileSync(filePath);
+            const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
+            const ext = filename.split('.').pop();
+            logoAttachments.push({
+              filename: `logo-${posSlug}.${ext}`,
+              content: content,
+            });
+          }
+        } catch (err) {
+          console.error(`[EMAIL] Failed to read logo file for attachment:`, err.message);
         }
       }
-    });
+    }
 
     console.log(`[EMAIL] Attempting to send quote email to: ${process.env.EMAIL_TO}`);
     console.log(`[EMAIL] From: ${process.env.EMAIL_FROM}`);
@@ -307,7 +297,7 @@ async function sendQuoteEmail(data) {
     if (logoAttachments.length > 0) {
       emailOptions.attachments = logoAttachments.map(att => ({
         filename: att.filename,
-        content: Buffer.from(att.content, 'base64'),
+        content: att.content,
       }));
     }
 
