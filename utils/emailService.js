@@ -143,7 +143,7 @@ function generateQuoteEmailHTML(data) {
   const digitizingFee = formatNumber(summary.digitizingFee);
   const subtotal = formatNumber(summary.subtotal);
   const vatAmount = formatNumber(summary.vatAmount);
-  const displayTotal = formatNumber(summary.displayTotal);
+  const displayTotal = formatNumber(summary.displayTotal || summary.totalExVat);
   const totalQty = summary.totalQuantity || 0;
   const totalItems = summary.totalItems || basket.length || 0;
   const vatMode = summary.vatMode || 'ex';
@@ -160,7 +160,7 @@ function generateQuoteEmailHTML(data) {
     hour12: false
   }).replace(',', '');
 
-  return `
+  let html = `
   <html>
   <head>
     <style>
@@ -205,8 +205,22 @@ function generateQuoteEmailHTML(data) {
     <div class="section">
       <h2>🎨 Customizations</h2>
       <table>${customizationsHTML}</table>
-    </div>
+    </div>`;
 
+  // -------- Uploaded Logos Section --------
+  const logosWithData = customizations.filter(c => c.logo);
+  if (logosWithData.length > 0) {
+    html += `<div class="section"><h2>🖼 Uploaded Logos</h2><table>`;
+    logosWithData.forEach(c => {
+      const imgTag = c.logo.startsWith('data:')
+        ? `<img src="${c.logo}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`
+        : `<a href="${escapeHtml(c.logo)}" target="_blank">View Logo</a><br><img src="${escapeHtml(c.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
+      html += `<tr><td class="label"><strong>${escapeHtml(c.position || 'Unknown')}:</strong></td><td class="value">${imgTag}</td></tr>`;
+    });
+    html += `</table></div>`;
+  }
+
+  html += `
     <div class="section">
       <h2>💰 Quote Summary</h2>
       <div class="summary-box">
@@ -219,8 +233,19 @@ function generateQuoteEmailHTML(data) {
         <div class="summary-row"><span>VAT (20%):</span><span>£${vatAmount}</span></div>
         <div class="summary-row"><span><strong>Total (${vatMode === 'inc' ? 'inc' : 'ex'} VAT):</strong></span><span><strong>£${displayTotal}</strong></span></div>
       </div>
-    </div>
+    </div>`;
 
+  // -------- Customer Notes Section --------
+  const notes = Array.isArray(data.notes) ? [...data.notes] : [];
+  const orderNotes = summary.orderNotes;
+  if (orderNotes && !notes.includes(orderNotes)) notes.unshift(orderNotes);
+  if (notes.length > 0) {
+    html += `<div class="section"><h2>📝 Customer Notes</h2><ul>`;
+    notes.forEach(n => { html += `<li>${escapeHtml(n)}</li>`; });
+    html += `</ul></div>`;
+  }
+
+  html += `
     <div class="section">
       <h2>📅 Request Date</h2>
       <p>${formattedDate}</p>
@@ -228,8 +253,9 @@ function generateQuoteEmailHTML(data) {
 
     <p style="color: #6b7280; font-size: 12px; margin-top: 20px;">This quote was automatically generated from the BrandedUK website.</p>
   </body>
-  </html>
-  `;
+  </html>`;
+
+  return html;
 }
 
 /* =========================
@@ -239,16 +265,46 @@ async function sendQuoteEmail(data) {
   try {
     const html = generateQuoteEmailHTML(data);
 
+    // Extract base64 logos as attachments
+    const customizations = data.customizations || [];
+    const logoAttachments = [];
+    customizations.forEach((c, i) => {
+      if (c.logo && c.logo.startsWith('data:')) {
+        const matches = c.logo.match(/data:([^;]+);base64,(.+)/);
+        if (matches) {
+          const ext = matches[1] === 'image/png' ? 'png' : 'jpg';
+          logoAttachments.push({
+            filename: `logo-${(c.position || 'unknown').replace(/\s+/g, '-')}.${ext}`,
+            content: matches[2],
+            encoding: 'base64',
+          });
+        }
+      }
+    });
+
     console.log(`[EMAIL] Attempting to send quote email to: ${process.env.EMAIL_TO}`);
     console.log(`[EMAIL] From: ${process.env.EMAIL_FROM}`);
+    if (logoAttachments.length > 0) {
+      console.log(`[EMAIL] Including ${logoAttachments.length} logo attachment(s)`);
+    }
 
-    const result = await resend.emails.send({
+    const emailOptions = {
       from: process.env.EMAIL_FROM,
       to: process.env.EMAIL_TO,
       replyTo: data.customer?.email,
       subject: `New Quote Request - ${data.customer?.fullName || 'Customer'}`,
       html,
-    });
+    };
+
+    if (logoAttachments.length > 0) {
+      emailOptions.attachments = logoAttachments.map(att => ({
+        filename: att.filename,
+        content: att.content,
+        encoding: att.encoding,
+      }));
+    }
+
+    const result = await resend.emails.send(emailOptions);
 
     // Resend API returns { data: { id: '...' } } or { id: '...' } depending on version
     const emailId = result?.data?.id || result?.id;

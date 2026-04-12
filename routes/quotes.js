@@ -209,6 +209,7 @@ router.post('/', upload.any(), async (req, res) => {
       summary,
       basket,
       customizations,
+      notes,
       timestamp,
     } = quoteData;
 
@@ -321,6 +322,8 @@ router.post('/', upload.any(), async (req, res) => {
             quantity: c.quantity,
           }))
         : [],
+
+      notes: Array.isArray(notes) ? notes : [],
 
       timestamp: timestamp || new Date().toISOString(),
     };
