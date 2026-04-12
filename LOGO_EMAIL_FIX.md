@@ -1,8 +1,16 @@
-# Fix Logo in Quote Email
+# Fix Logo + Notes in Quote Email
 
-## PROBLEMA
+## PROBLEMA 1 — Logo non visibile nell'email
 Il frontend manda il logo come `data:image/png;base64,...` perché l'upload a DO Spaces fallisce (credenziali scadute su Vercel).  
 L'attuale `emailService.js` genera `<img src="data:...">` che **NON funziona** in Gmail/Outlook.
+
+## PROBLEMA 2 — Notes non arrivano nell'email
+Il frontend manda le notes in 3 posti:
+- `basket[0].note` = testo note
+- `summary.orderNotes` = testo note
+- `notes[]` = array con il testo
+
+Ma il file `routes/quotes.js` **NON passa** `item.note` nella mappatura del basket → il campo si perde.
 
 ---
 
@@ -111,10 +119,112 @@ SOSTITUIRE il blocco `logoAttachments` con:
 | DO Spaces funziona → logo è URL | ✅ Immagine inline visibile + link download |
 | DO Spaces non funziona → logo è base64 | ✅ File allegato scaricabile + testo "📎 Logo attached" |
 
-## PAYLOAD DAL FRONTEND
+---
+
+## FIX 3 — Notes non arrivano nell'email
+
+### A) In `routes/quotes.js` — aggiungere `note` alla mappatura basket
+
+Trovare il blocco:
+```js
+      basket: basket.map(item => ({
+        name: item.name,
+        code: item.code,
+        color: item.color,
+        quantity: item.quantity,
+        sizes: item.sizes || {},
+        sizesSummary: item.sizesSummary || '',
+        unitPrice: item.unitPrice,
+        itemTotal: item.itemTotal,
+        image: item.image || null,
+      })),
+```
+
+SOSTITUIRE con:
+```js
+      basket: basket.map(item => ({
+        name: item.name,
+        code: item.code,
+        color: item.color,
+        quantity: item.quantity,
+        sizes: item.sizes || {},
+        sizesSummary: item.sizesSummary || '',
+        unitPrice: item.unitPrice,
+        itemTotal: item.itemTotal,
+        image: item.image || null,
+        note: item.note || '',
+      })),
+```
+
+### B) In `utils/emailService.js` — mostrare le note di ogni item nel basket
+
+Nella funzione `generateQuoteEmailHTML`, nella sezione basket items, DOPO la riga `Item Total`:
+
+```js
+      // Inside basketHTML loop, after itemTotal row, add:
+      if (item.note) {
+        basketHTML += `<tr><td class="label">Notes:</td><td class="value" style="color:#7c3aed;font-style:italic;">${escapeHtml(item.note)}</td></tr>`;
+      }
+```
+
+### C) Verificare la sezione "Customer Notes" già esistente
+
+La sezione Customer Notes in `emailService.js` usa `data.notes` e `summary.orderNotes`.
+Il frontend manda:
+```json
+{
+  "summary": { "orderNotes": "testo note" },
+  "notes": ["testo note"],
+  "basket": [{ "note": "testo note", ... }]
+}
+```
+
+Il codice attuale nel template:
+```js
+  const notes = Array.isArray(data.notes) ? [...data.notes] : [];
+  const orderNotes = summary.orderNotes;
+  if (orderNotes && !notes.includes(orderNotes)) notes.unshift(orderNotes);
+```
+
+Questo dovrebbe funzionare — ma assicurati che `data.notes` e `data.summary.orderNotes` arrivino correttamente (non vengano filtrati nel route).
+
+---
+
+## PAYLOAD COMPLETO DAL FRONTEND
 
 ```json
 {
+  "customer": {
+    "fullName": "Mario Rossi",
+    "phone": "1234567890",
+    "email": "mario@test.com"
+  },
+  "summary": {
+    "totalQuantity": 1,
+    "totalItems": 1,
+    "garmentCost": 3.35,
+    "customizationCost": 3.50,
+    "digitizingFee": 0,
+    "subtotal": 6.85,
+    "vatRate": 0.20,
+    "vatAmount": 1.37,
+    "totalExVat": 6.85,
+    "totalIncVat": 8.22,
+    "displayTotal": 8.22,
+    "vatMode": "inc",
+    "orderNotes": "Please deliver by Friday"
+  },
+  "basket": [{
+    "name": "Ultra Cotton T-Shirt",
+    "code": "GD002",
+    "color": "Black",
+    "size": "M",
+    "quantity": 1,
+    "unitPrice": 3.35,
+    "itemTotal": 3.35,
+    "image": "",
+    "note": "Please deliver by Friday"
+  }],
   "customizations": [{
     "position": "Left Chest",
     "method": "Print",
@@ -125,6 +235,8 @@ SOSTITUIRE il blocco `logoAttachments` con:
     "unitPrice": 3.50,
     "lineTotal": 3.50,
     "quantity": 1
-  }]
+  }],
+  "notes": ["Please deliver by Friday"],
+  "timestamp": "2026-04-12T15:00:00.000Z"
 }
 ```

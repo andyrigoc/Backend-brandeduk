@@ -215,6 +215,20 @@ router.post('/', upload.any(), async (req, res) => {
 
     console.log('[QUOTES] Customer:', customer ? 'exists' : 'missing');
     console.log('[QUOTES] Customer email:', customer?.email || 'missing');
+    
+    // DEBUG: Log customizations to see what logo data arrives
+    if (Array.isArray(customizations)) {
+      customizations.forEach((c, i) => {
+        console.log(`[QUOTES] Customization #${i}:`, {
+          position: c.position,
+          method: c.method,
+          hasLogo: c.hasLogo,
+          logoField: c.logo ? (c.logo.startsWith('data:') ? `base64 (${c.logo.length} chars)` : `URL: ${c.logo.substring(0, 80)}`) : 'NULL/MISSING',
+          logoDataField: c.logoData ? `logoData exists (${String(c.logoData).length} chars)` : 'no logoData',
+          allKeys: Object.keys(c),
+        });
+      });
+    }
 
     // ===== VALIDATION =====
     if (!customer || !customer.email) {
