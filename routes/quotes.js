@@ -357,12 +357,27 @@ router.post('/', upload.any(), async (req, res) => {
     // Cleanup uploaded files after sending email (we don't need to store them)
     cleanupFiles(uploadedFiles);
 
+    // DEBUG: build logo diagnostics for API response
+    const _logoDebug = Array.isArray(customizations) ? customizations.map((c, i) => ({
+      index: i,
+      position: c.position,
+      hasLogo: c.hasLogo,
+      logoField: c.logo ? (c.logo.startsWith('data:') ? `base64 (${c.logo.length} chars)` : `URL: ${c.logo.substring(0, 80)}`) : 'NULL/MISSING',
+      allKeys: Object.keys(c),
+    })) : 'no customizations';
+
     if (emailResult?.success) {
       console.log(`[QUOTES] Successfully processed quote from ${customer.email} (ID: ${quoteId})`);
       return res.status(200).json({
         success: true,
         message: 'Quote submitted successfully',
-        quoteId: quoteId
+        quoteId: quoteId,
+        _debug: {
+          customizations: _logoDebug,
+          emailDataLogos: emailData.customizations.map(c => ({ position: c.position, hasLogo: c.hasLogo, logoPresent: !!c.logo, logoType: c.logo ? (c.logo.startsWith('data:') ? 'base64' : 'url') : 'none' })),
+          attachmentCount: logoAttachments.length,
+          contentType: req.headers['content-type'],
+        }
       });
     }
 
