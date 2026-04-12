@@ -114,11 +114,13 @@ function generateQuoteEmailHTML(data) {
       // Build logo preview HTML
       let logoHTML = '';
       if (c.logo) {
-        if (c.logo.startsWith('data:image/')) {
-          // Base64 inline logo
-          logoHTML = `<br><img src="${c.logo}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">`;
+        if (c.logo.startsWith('data:')) {
+          // Base64 logo - can't inline in email, reference attachment
+          const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
+          const ext = c.logo.startsWith('data:image/png') ? 'png' : 'jpg';
+          logoHTML = `<br><span style="color:#7c3aed;font-size:13px;">📎 Logo allegato: <strong>logo-${escapeHtml(posSlug)}.${ext}</strong></span>`;
         } else {
-          // CDN URL logo
+          // CDN URL logo - can display inline
           logoHTML = `<br><img src="${escapeHtml(c.logo)}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"><br><a href="${escapeHtml(c.logo)}" target="_blank" style="color: #7c3aed; font-size: 12px;">Download Logo</a>`;
         }
       }
@@ -212,9 +214,15 @@ function generateQuoteEmailHTML(data) {
   if (logosWithData.length > 0) {
     html += `<div class="section"><h2>🖼 Uploaded Logos</h2><table>`;
     logosWithData.forEach(c => {
-      const imgTag = c.logo.startsWith('data:')
-        ? `<img src="${c.logo}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`
-        : `<a href="${escapeHtml(c.logo)}" target="_blank">View Logo</a><br><img src="${escapeHtml(c.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
+      let imgTag;
+      if (c.logo.startsWith('data:')) {
+        // Base64 logo - reference the attachment by filename
+        const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
+        const ext = c.logo.startsWith('data:image/png') ? 'png' : 'jpg';
+        imgTag = `<span style="color:#7c3aed;">📎 See attached file: <strong>logo-${escapeHtml(posSlug)}.${ext}</strong></span>`;
+      } else {
+        imgTag = `<a href="${escapeHtml(c.logo)}" target="_blank">View Logo</a><br><img src="${escapeHtml(c.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
+      }
       html += `<tr><td class="label"><strong>${escapeHtml(c.position || 'Unknown')}:</strong></td><td class="value">${imgTag}</td></tr>`;
     });
     html += `</table></div>`;
@@ -299,8 +307,7 @@ async function sendQuoteEmail(data) {
     if (logoAttachments.length > 0) {
       emailOptions.attachments = logoAttachments.map(att => ({
         filename: att.filename,
-        content: att.content,
-        encoding: att.encoding,
+        content: Buffer.from(att.content, 'base64'),
       }));
     }
 
