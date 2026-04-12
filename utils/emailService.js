@@ -111,12 +111,24 @@ function generateQuoteEmailHTML(data) {
       const lineTotal = c.lineTotal === 'POA' ? 'POA' : `£${formatNumber(c.lineTotal)}`;
       const qty = c.quantity || 0;
 
+      // Build logo preview HTML
+      let logoHTML = '';
+      if (c.logo) {
+        if (c.logo.startsWith('data:image/')) {
+          // Base64 inline logo
+          logoHTML = `<br><img src="${c.logo}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">`;
+        } else {
+          // CDN URL logo
+          logoHTML = `<br><img src="${escapeHtml(c.logo)}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"><br><a href="${escapeHtml(c.logo)}" target="_blank" style="color: #7c3aed; font-size: 12px;">Download Logo</a>`;
+        }
+      }
+
       customizationsHTML += `
                 <tr>
                     <td class="label">${position}</td>
                     <td class="value">
                         <strong>${method}</strong> - ${type}<br>
-                        Logo Uploaded: ${logo}${text}<br>
+                        Logo Uploaded: ${logo}${text}${logoHTML}<br>
                         <small>Unit: ${unitPrice} × Qty: ${qty} = ${lineTotal}</small>
                     </td>
                 </tr>`;

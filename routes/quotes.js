@@ -314,6 +314,7 @@ router.post('/', upload.any(), async (req, res) => {
             method: c.method,
             type: c.type,
             hasLogo: c.hasLogo || logoFiles[c.position?.toLowerCase().replace(/\s+/g, '-')] !== undefined,
+            logo: c.logo || null,
             text: c.text ?? null,
             unitPrice: c.unitPrice,
             lineTotal: c.lineTotal,
