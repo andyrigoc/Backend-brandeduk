@@ -229,8 +229,8 @@ function extractLogoAttachments(customizations) {
 
     attachments.push({
       filename: `logo-${posSlug}.${ext}`,
-      content: base64Data,          // Resend accepts raw base64 string
-      type: mimeType,               // explicit MIME type
+      content: Buffer.from(base64Data, 'base64'),
+      contentType: mimeType,
     });
 
     console.log(`[EMAIL] Prepared attachment: logo-${posSlug}.${ext} (${base64Data.length} base64 chars, type: ${mimeType})`);
