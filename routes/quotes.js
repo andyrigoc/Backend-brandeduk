@@ -372,7 +372,7 @@ router.post('/', upload.any(), async (req, res) => {
         success: true,
         message: 'Quote submitted successfully',
         quoteId: quoteId,
-        _debug: {
+                fetch('https://api.brandeduk.com/api/quotes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customer: { fullName: 'Test Debug', phone: '0000000000', email: 'info@brandeduk.com' }, summary: { totalQuantity: 1, totalItems: 1, garmentCost: 10, customizationCost: 5, digitizingFee: 0, subtotal: 15, vatRate: 0.2, vatAmount: 3, totalExVat: 15, totalIncVat: 18, displayTotal: 18, vatMode: 'inc' }, basket: [{ name: 'Test', code: 'T001', color: 'Black', quantity: 1, unitPrice: 10, itemTotal: 10 }], customizations: [{ position: 'Left Chest', method: 'Embroidery', type: 'Logo', hasLogo: true, logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', unitPrice: 5, lineTotal: 5, quantity: 1 }], notes: ['debug test'] }) }).then(r => r.json()).then(d => console.log(JSON.stringify(d, null, 2))).catch(e => console.error(e));_debug: {
           customizations: _logoDebug,
           emailDataLogos: emailData.customizations.map(c => ({ position: c.position, hasLogo: c.hasLogo, logoPresent: !!c.logo, logoType: c.logo ? (c.logo.startsWith('data:') ? 'base64' : 'url') : 'none' })),
           attachmentCount: logoAttachments.length,

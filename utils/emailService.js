@@ -1,306 +1,252 @@
-// services/emailService.js
+// utils/emailService.js
 const { Resend } = require("resend");
 
-// Make RESEND_API_KEY optional for development
 let resend = null;
 if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
   console.log("✅ Resend email service initialized");
 } else {
-  console.log("⚠️ RESEND_API_KEY not set - email service disabled (OK for development)");
+  console.log("⚠️ RESEND_API_KEY not set - email service disabled");
 }
 
+/* ========== HELPERS ========== */
 
-// Helper function to escape HTML (like PHP's htmlspecialchars)
-function escapeHtml(text) {
+function esc(text) {
   if (text == null) return '';
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return String(text).replace(/[&<>"']/g, m => map[m]);
 }
 
-// Helper function to format numbers (like PHP's number_format)
-function formatNumber(num, decimals = 2) {
+function fmt(num, decimals = 2) {
   if (num === null || num === undefined || num === 'POA') return num;
   return parseFloat(num).toFixed(decimals);
 }
 
+/* ==========================================================
+   QUOTE EMAIL
+========================================================== */
+
 function generateQuoteEmailHTML(data) {
-  const customer = data.customer || {};
-  const summary = data.summary || {};
+  const c = data.customer || {};
+  const s = data.summary || {};
   const basket = data.basket || [];
-  const customizations = data.customizations || [];
-  const product = data.product || {}; // Legacy fallback
+  const custs = data.customizations || [];
 
-  // Get customer details (support both fullName and firstName/lastName formats)
-  const customerName = customer.fullName || 
-    `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Customer';
-  const customerEmail = customer.email || '';
-  const customerPhone = customer.phone || '';
-  const customerCompany = customer.company || null;
-  const customerAddress = customer.address || null;
+  const name = c.fullName || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Customer';
+  const email = c.email || '';
+  const phone = c.phone || '';
+  const company = c.company || null;
+  const address = c.address || null;
 
-  /* -------- Basket Items HTML -------- */
+  /* ---- Basket ---- */
   let basketHTML = '';
   if (basket.length > 0) {
-    basket.forEach((item, index) => {
-      const itemName = escapeHtml(item.name || 'Product');
-      const itemCode = escapeHtml(item.code || 'N/A');
-      const itemColor = escapeHtml(item.color || 'N/A');
-      const itemQty = item.quantity || 0;
-      const unitPrice = formatNumber(item.unitPrice);
-      const itemTotal = formatNumber(item.itemTotal);
-
-      // Build sizes breakdown
+    basket.forEach((item, i) => {
       let sizesText = '';
       if (item.sizes && typeof item.sizes === 'object') {
-        const sizesArray = [];
-        Object.entries(item.sizes).forEach(([size, qty]) => {
-          if (qty > 0) {
-            sizesArray.push(`${escapeHtml(size)}: ${qty}`);
-          }
-        });
-        sizesText = sizesArray.length 
-          ? sizesArray.join(', ') 
-          : (item.sizesSummary ? escapeHtml(item.sizesSummary) : '');
+        const arr = [];
+        Object.entries(item.sizes).forEach(([sz, qty]) => { if (qty > 0) arr.push(`${esc(sz)}: ${qty}`); });
+        sizesText = arr.length ? arr.join(', ') : (item.sizesSummary ? esc(item.sizesSummary) : '');
       } else {
-        sizesText = item.sizesSummary ? escapeHtml(item.sizesSummary) : '';
+        sizesText = item.sizesSummary ? esc(item.sizesSummary) : '';
       }
-
       basketHTML += `
-            <div class="basket-item">
-                <div class="basket-item-header">Item #${index + 1}: ${itemName} (${itemCode})</div>
-                <table>
-                    <tr><td class="label">Color:</td><td class="value">${itemColor}</td></tr>
-                    <tr><td class="label">Total Quantity:</td><td class="value"><strong>${itemQty} units</strong></td></tr>`;
-      
-      if (sizesText) {
-        basketHTML += `<tr><td class="label">Sizes:</td><td class="value sizes-detail">${sizesText}</td></tr>`;
-      }
-      
-      basketHTML += `
-                    <tr><td class="label">Unit Price:</td><td class="value">£${unitPrice}</td></tr>
-                    <tr><td class="label">Item Total:</td><td class="value"><strong>£${itemTotal}</strong></td></tr>
-                </table>
-            </div>`;
+      <div style="background:#fff;padding:12px;margin:8px 0;border-radius:6px;border:1px solid #e5e7eb;">
+        <div style="font-weight:bold;color:#7c3aed;margin-bottom:8px;">Item #${i + 1}: ${esc(item.name || 'Product')} (${esc(item.code || 'N/A')})</div>
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+          <tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Color:</td><td style="border-bottom:1px solid #e5e7eb;">${esc(item.color || 'N/A')}</td></tr>
+          <tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Total Quantity:</td><td style="border-bottom:1px solid #e5e7eb;"><strong>${item.quantity || 0} units</strong></td></tr>
+          ${sizesText ? `<tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Sizes:</td><td style="color:#6b7280;font-size:0.9em;border-bottom:1px solid #e5e7eb;">${sizesText}</td></tr>` : ''}
+          <tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Unit Price:</td><td style="border-bottom:1px solid #e5e7eb;">&pound;${fmt(item.unitPrice)}</td></tr>
+          <tr><td style="font-weight:bold;color:#374151;">Item Total:</td><td><strong>&pound;${fmt(item.itemTotal)}</strong></td></tr>
+        </table>
+      </div>`;
     });
-  } else {
-    // Fallback to old product format if basket is empty
-    basketHTML = `
-            <p>Product: ${escapeHtml(product.name || 'N/A')}</p>
-            <p>Code: ${escapeHtml(product.code || 'N/A')}</p>
-            <p>Quantity: ${product.quantity || 0} units</p>`;
   }
 
-  /* -------- Customizations HTML -------- */
-  let customizationsHTML = '';
-  if (customizations.length > 0) {
-    customizations.forEach(c => {
-      const method = (c.method || 'N/A').toUpperCase();
-      const type = escapeHtml(c.type || 'N/A');
-      const position = escapeHtml(c.position || 'Unknown');
-      const hasLogo = c.hasLogo ?? c.uploadedLogo ?? false;
-      const logo = hasLogo ? '✅ Yes' : '❌ No';
-      const text = c.text ? ` - Text: ${escapeHtml(c.text)}` : '';
-      const unitPrice = c.unitPrice === 'POA' ? 'POA' : `£${formatNumber(c.unitPrice)}`;
-      const lineTotal = c.lineTotal === 'POA' ? 'POA' : `£${formatNumber(c.lineTotal)}`;
-      const qty = c.quantity || 0;
+  /* ---- Customizations ---- */
+  let custsHTML = '';
+  if (custs.length > 0) {
+    custs.forEach(cu => {
+      const method = (cu.method || 'N/A').toUpperCase();
+      const type = esc(cu.type || 'N/A');
+      const position = esc(cu.position || 'Unknown');
+      const hasLogo = cu.hasLogo ?? false;
+      const logoIcon = hasLogo ? '&#9989; Yes' : '&#10060; No';
+      const text = cu.text ? ` - Text: ${esc(cu.text)}` : '';
+      const uPrice = cu.unitPrice === 'POA' ? 'POA' : `&pound;${fmt(cu.unitPrice)}`;
+      const lTotal = cu.lineTotal === 'POA' ? 'POA' : `&pound;${fmt(cu.lineTotal)}`;
+      const qty = cu.quantity || 0;
 
-      // Build logo preview HTML
       let logoHTML = '';
-      if (c.logo) {
-        if (c.logo.startsWith('data:')) {
-          // Base64 — can't show inline in email, reference the attachment
-          const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
-          const ext = c.logo.startsWith('data:image/png') ? 'png' : 'jpg';
-          logoHTML = `<br><span style="color:#7c3aed;font-size:13px;">📎 Logo attached: <strong>logo-${escapeHtml(posSlug)}.${ext}</strong></span>`;
+      if (cu.logo) {
+        if (cu.logo.startsWith('data:')) {
+          const posSlug = (cu.position || 'unknown').replace(/\s+/g, '-');
+          const ext = cu.logo.startsWith('data:image/png') ? 'png' : 'jpg';
+          logoHTML = `<br><span style="color:#7c3aed;font-size:13px;">&#128206; Logo attached: <strong>logo-${esc(posSlug)}.${ext}</strong></span>`;
         } else {
-          // CDN URL — show inline
-          logoHTML = `<br><img src="${escapeHtml(c.logo)}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"><br><a href="${escapeHtml(c.logo)}" target="_blank" style="color: #7c3aed; font-size: 12px;">Download Logo</a>`;
+          logoHTML = `<br><img src="${esc(cu.logo)}" alt="Logo" style="max-width:150px;max-height:100px;margin-top:8px;border:1px solid #e5e7eb;border-radius:4px;"><br><a href="${esc(cu.logo)}" target="_blank" style="color:#7c3aed;font-size:12px;">Download Logo</a>`;
         }
       }
 
-      customizationsHTML += `
-                <tr>
-                    <td class="label">${position}</td>
-                    <td class="value">
-                        <strong>${method}</strong> - ${type}<br>
-                        Logo Uploaded: ${logo}${text}${logoHTML}<br>
-                        <small>Unit: ${unitPrice} × Qty: ${qty} = ${lineTotal}</small>
-                    </td>
-                </tr>`;
+      custsHTML += `
+      <tr>
+        <td style="font-weight:bold;color:#374151;padding:10px;border-bottom:1px solid #e5e7eb;vertical-align:top;">${position}</td>
+        <td style="padding:10px;border-bottom:1px solid #e5e7eb;vertical-align:top;">
+          <strong>${method}</strong> - ${type}<br>
+          Logo Uploaded: ${logoIcon}${text}${logoHTML}<br>
+          <small>Unit: ${uPrice} &times; Qty: ${qty} = ${lTotal}</small>
+        </td>
+      </tr>`;
     });
   } else {
-    customizationsHTML = `<tr><td colspan="2">No customizations selected</td></tr>`;
+    custsHTML = '<tr><td colspan="2" style="padding:10px;">No customizations selected</td></tr>';
   }
 
-  /* -------- Summary HTML -------- */
-  const garmentCost = formatNumber(summary.garmentCost);
-  const customizationCost = formatNumber(summary.customizationCost);
-  const digitizingFee = formatNumber(summary.digitizingFee);
-  const subtotal = formatNumber(summary.subtotal);
-  const vatAmount = formatNumber(summary.vatAmount);
-  const displayTotal = formatNumber(summary.displayTotal || summary.totalExVat);
-  const totalQty = summary.totalQuantity || 0;
-  const totalItems = summary.totalItems || basket.length || 0;
-  const vatMode = summary.vatMode || 'ex';
+  /* ---- Uploaded Logos Section ---- */
+  let logosSection = '';
+  const logosWithData = custs.filter(cu => cu.logo);
+  if (logosWithData.length > 0) {
+    let rows = '';
+    logosWithData.forEach(cu => {
+      let imgTag;
+      if (cu.logo.startsWith('data:')) {
+        const posSlug = (cu.position || 'unknown').replace(/\s+/g, '-');
+        const ext = cu.logo.startsWith('data:image/png') ? 'png' : 'jpg';
+        imgTag = `<span style="color:#7c3aed;">&#128206; See attached file: <strong>logo-${esc(posSlug)}.${ext}</strong></span>`;
+      } else {
+        imgTag = `<a href="${esc(cu.logo)}" target="_blank" style="color:#7c3aed;">View Logo</a><br><img src="${esc(cu.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
+      }
+      rows += `<tr><td style="font-weight:bold;color:#374151;padding:10px;border-bottom:1px solid #e5e7eb;"><strong>${esc(cu.position || 'Unknown')}:</strong></td><td style="padding:10px;border-bottom:1px solid #e5e7eb;">${imgTag}</td></tr>`;
+    });
+    logosSection = `
+    <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+      <h2 style="margin-top:0;color:#374151;">&#128444; Uploaded Logos</h2>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${rows}</table>
+    </div>`;
+  }
 
-  // Format date like PHP: d/m/Y H:i:s
+  /* ---- Summary ---- */
+  const garmentCost = fmt(s.garmentCost);
+  const customizationCost = fmt(s.customizationCost);
+  const digitizingFee = fmt(s.digitizingFee);
+  const subtotal = fmt(s.subtotal);
+  const vatAmount = fmt(s.vatAmount);
+  const displayTotal = fmt(s.displayTotal || s.totalExVat);
+  const totalQty = s.totalQuantity || 0;
+  const totalItems = s.totalItems || basket.length || 0;
+  const vatMode = s.vatMode || 'ex';
+
+  /* ---- Customer Notes ---- */
+  const notes = Array.isArray(data.notes) ? [...data.notes] : [];
+  const orderNotes = s.orderNotes;
+  if (orderNotes && !notes.includes(orderNotes)) notes.unshift(orderNotes);
+  basket.forEach(item => {
+    if (item.note && !notes.includes(item.note)) notes.push(item.note);
+  });
+
+  let notesSection = '';
+  if (notes.length > 0) {
+    notesSection = `
+    <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+      <h2 style="margin-top:0;color:#374151;">&#128221; Customer Notes</h2>
+      <ul>${notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+    </div>`;
+  }
+
   const now = new Date();
   const formattedDate = now.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
   }).replace(',', '');
 
-  let html = `
-  <html>
-  <head>
-    <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; }
-      .header { background: #7c3aed; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
-      .section { background: #f9fafb; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #7c3aed; }
-      .section h2 { margin-top: 0; color: #374151; }
-      .label { font-weight: bold; color: #374151; width: 150px; }
-      .value { color: #111827; }
-      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-      td { padding: 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-      tr:last-child td { border-bottom: none; }
-      .summary-box { background: #ede9fe; padding: 15px; border-radius: 8px; margin-top: 10px; }
-      .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ddd4fe; }
-      .summary-row:last-child { border-bottom: none; font-weight: bold; font-size: 1.1em; }
-      .basket-item { background: white; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #e5e7eb; }
-      .basket-item-header { font-weight: bold; color: #7c3aed; margin-bottom: 8px; }
-      .sizes-detail { color: #6b7280; font-size: 0.9em; margin-top: 4px; }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <h1>🎉 New Quote Request</h1>
+  return `<html><head></head><body style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;margin:0;padding:0;">
+  <div style="background:#7c3aed;color:white;padding:20px;border-radius:8px 8px 0 0;">
+    <h1 style="margin:0;">&#127881; New Quote Request</h1>
+  </div>
+
+  <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+    <h2 style="margin-top:0;color:#374151;">&#128100; Customer Details</h2>
+    <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+      <tr><td style="font-weight:bold;color:#374151;width:150px;border-bottom:1px solid #e5e7eb;">Name:</td><td style="border-bottom:1px solid #e5e7eb;">${esc(name)}</td></tr>
+      ${company ? `<tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Company:</td><td style="border-bottom:1px solid #e5e7eb;">${esc(company)}</td></tr>` : ''}
+      <tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Email:</td><td style="border-bottom:1px solid #e5e7eb;">${esc(email)}</td></tr>
+      <tr><td style="font-weight:bold;color:#374151;border-bottom:1px solid #e5e7eb;">Phone:</td><td style="border-bottom:1px solid #e5e7eb;">${esc(phone)}</td></tr>
+      ${address ? `<tr><td style="font-weight:bold;color:#374151;">Address:</td><td>${esc(address)}</td></tr>` : ''}
+    </table>
+  </div>
+
+  <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+    <h2 style="margin-top:0;color:#374151;">&#128722; Basket Items (${totalItems} ${totalItems === 1 ? 'item' : 'items'})</h2>
+    ${basketHTML}
+  </div>
+
+  <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+    <h2 style="margin-top:0;color:#374151;">&#127912; Customizations</h2>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${custsHTML}</table>
+  </div>
+
+  ${logosSection}
+
+  <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+    <h2 style="margin-top:0;color:#374151;">&#128176; Quote Summary</h2>
+    <div style="background:#ede9fe;padding:15px;border-radius:8px;margin-top:10px;">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>Total Items:</span><span><strong>${totalItems} ${totalItems === 1 ? 'product' : 'products'}</strong></span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>Total Quantity:</span><span><strong>${totalQty} units</strong></span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>Garment Cost:</span><span>&pound;${garmentCost} ex VAT</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>Customization Cost:</span><span>&pound;${customizationCost} ex VAT</span></div>
+      ${parseFloat(digitizingFee) > 0 ? `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>Digitizing Fee (one-time):</span><span>&pound;${digitizingFee} ex VAT</span></div>` : ''}
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>Subtotal (ex VAT):</span><span>&pound;${subtotal}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ddd4fe;"><span>VAT (20%):</span><span>&pound;${vatAmount}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:bold;font-size:1.1em;"><span>Total (${vatMode === 'inc' ? 'inc' : 'ex'} VAT):</span><span>&pound;${displayTotal}</span></div>
     </div>
+  </div>
 
-    <div class="section">
-      <h2>👤 Customer Details</h2>
-      <table>
-        <tr><td class="label">Name:</td><td class="value">${escapeHtml(customerName)}</td></tr>
-        ${customerCompany ? `<tr><td class="label">Company:</td><td class="value">${escapeHtml(customerCompany)}</td></tr>` : ''}
-        <tr><td class="label">Email:</td><td class="value">${escapeHtml(customerEmail)}</td></tr>
-        <tr><td class="label">Phone:</td><td class="value">${escapeHtml(customerPhone)}</td></tr>
-        ${customerAddress ? `<tr><td class="label">Address:</td><td class="value">${escapeHtml(customerAddress)}</td></tr>` : ''}
-      </table>
-    </div>
+  ${notesSection}
 
-    <div class="section">
-      <h2>🛒 Basket Items (${totalItems} ${totalItems === 1 ? 'item' : 'items'})</h2>
-      ${basketHTML}
-    </div>
+  <div style="background:#f9fafb;padding:20px;margin:15px 0;border-radius:8px;border-left:4px solid #7c3aed;">
+    <h2 style="margin-top:0;color:#374151;">&#128197; Request Date</h2>
+    <p>${formattedDate}</p>
+  </div>
 
-    <div class="section">
-      <h2>🎨 Customizations</h2>
-      <table>${customizationsHTML}</table>
-    </div>`;
-
-  // -------- Uploaded Logos Section --------
-  const logosWithData = customizations.filter(c => c.logo);
-  if (logosWithData.length > 0) {
-    html += `<div class="section"><h2>🖼 Uploaded Logos</h2><table>`;
-    logosWithData.forEach(c => {
-      let imgTag;
-      if (c.logo.startsWith('data:')) {
-        // Base64 — reference the email attachment
-        const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
-        const ext = c.logo.startsWith('data:image/png') ? 'png' : 'jpg';
-        imgTag = `<span style="color:#7c3aed;">📎 See attached file: <strong>logo-${escapeHtml(posSlug)}.${ext}</strong></span>`;
-      } else {
-        // CDN URL — show inline with preview
-        imgTag = `<a href="${escapeHtml(c.logo)}" target="_blank">View Logo</a><br><img src="${escapeHtml(c.logo)}" style="max-width:200px;max-height:150px;border:2px dashed #ea580c;padding:4px;border-radius:6px;">`;
-      }
-      html += `<tr><td class="label"><strong>${escapeHtml(c.position || 'Unknown')}:</strong></td><td class="value">${imgTag}</td></tr>`;
-    });
-    html += `</table></div>`;
-  }
-
-  html += `
-    <div class="section">
-      <h2>💰 Quote Summary</h2>
-      <div class="summary-box">
-        <div class="summary-row"><span>Total Items:</span><span><strong>${totalItems} ${totalItems === 1 ? 'product' : 'products'}</strong></span></div>
-        <div class="summary-row"><span>Total Quantity:</span><span><strong>${totalQty} units</strong></span></div>
-        <div class="summary-row"><span>Garment Cost:</span><span>£${garmentCost} ex VAT</span></div>
-        <div class="summary-row"><span>Customization Cost:</span><span>£${customizationCost} ex VAT</span></div>
-        ${parseFloat(digitizingFee) > 0 ? `<div class="summary-row"><span>Digitizing Fee (one-time):</span><span>£${digitizingFee} ex VAT</span></div>` : ''}
-        <div class="summary-row"><span>Subtotal (ex VAT):</span><span>£${subtotal}</span></div>
-        <div class="summary-row"><span>VAT (20%):</span><span>£${vatAmount}</span></div>
-        <div class="summary-row"><span><strong>Total (${vatMode === 'inc' ? 'inc' : 'ex'} VAT):</strong></span><span><strong>£${displayTotal}</strong></span></div>
-      </div>
-    </div>`;
-
-  // -------- Customer Notes Section --------
-  const notes = Array.isArray(data.notes) ? [...data.notes] : [];
-  const orderNotes = summary.orderNotes;
-  if (orderNotes && !notes.includes(orderNotes)) notes.unshift(orderNotes);
-  if (notes.length > 0) {
-    html += `<div class="section"><h2>📝 Customer Notes</h2><ul>`;
-    notes.forEach(n => { html += `<li>${escapeHtml(n)}</li>`; });
-    html += `</ul></div>`;
-  }
-
-  html += `
-    <div class="section">
-      <h2>📅 Request Date</h2>
-      <p>${formattedDate}</p>
-    </div>
-
-    <p style="color: #6b7280; font-size: 12px; margin-top: 20px;">This quote was automatically generated from the BrandedUK website.</p>
-  </body>
-  </html>`;
-
-  return html;
+  <p style="color:#6b7280;font-size:12px;margin-top:20px;">This quote was automatically generated from the BrandedUK website.</p>
+</body></html>`;
 }
 
-/* =========================
-   SEND EMAIL
-========================= */
+/* ---- Build attachments from base64 logos ---- */
+function extractLogoAttachments(customizations) {
+  const attachments = [];
+  for (const cu of customizations) {
+    if (!cu.logo || !cu.logo.startsWith('data:')) continue;
+
+    const match = cu.logo.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) continue;
+
+    const mimeType = match[1];
+    const base64Data = match[2];
+    const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+    const posSlug = (cu.position || 'unknown').replace(/\s+/g, '-');
+
+    attachments.push({
+      filename: `logo-${posSlug}.${ext}`,
+      content: base64Data,          // Resend accepts raw base64 string
+      type: mimeType,               // explicit MIME type
+    });
+
+    console.log(`[EMAIL] Prepared attachment: logo-${posSlug}.${ext} (${base64Data.length} base64 chars, type: ${mimeType})`);
+  }
+  return attachments;
+}
+
 async function sendQuoteEmail(data) {
   try {
     const html = generateQuoteEmailHTML(data);
-
-    // Extract base64 logos as email attachments
     const customizations = data.customizations || [];
-    const logoAttachments = [];
-    for (const c of customizations) {
-      if (!c.logo) continue;
+    const attachments = extractLogoAttachments(customizations);
 
-      if (c.logo.startsWith('data:')) {
-        // BASE64 LOGO — convert to attachment
-        const matches = c.logo.match(/data:([^;]+);base64,(.+)/);
-        if (matches) {
-          const mimeType = matches[1];
-          const ext = mimeType === 'image/png' ? 'png' : 'jpg';
-          const posSlug = (c.position || 'unknown').replace(/\s+/g, '-');
-          logoAttachments.push({
-            filename: `logo-${posSlug}.${ext}`,
-            content: Buffer.from(matches[2], 'base64'),
-          });
-        }
-      }
-      // URL logos don't need attachment — they render inline via <img src="URL">
-    }
-
-    console.log(`[EMAIL] Attempting to send quote email to: ${process.env.EMAIL_TO}`);
+    console.log(`[EMAIL] Sending quote email to: ${process.env.EMAIL_TO}`);
     console.log(`[EMAIL] From: ${process.env.EMAIL_FROM}`);
-    if (logoAttachments.length > 0) {
-      console.log(`[EMAIL] Including ${logoAttachments.length} logo attachment(s)`);
-    }
+    console.log(`[EMAIL] Attachments: ${attachments.length}`);
 
     const emailOptions = {
       from: process.env.EMAIL_FROM,
@@ -310,165 +256,92 @@ async function sendQuoteEmail(data) {
       html,
     };
 
-    if (logoAttachments.length > 0) {
-      emailOptions.attachments = logoAttachments.map(att => ({
-        filename: att.filename,
-        content: att.content,
-      }));
+    if (attachments.length > 0) {
+      emailOptions.attachments = attachments;
+      console.log(`[EMAIL] Attachment details:`, attachments.map(a => ({ filename: a.filename, type: a.type, contentLength: a.content.length })));
     }
 
     const result = await resend.emails.send(emailOptions);
-
-    // Resend API returns { data: { id: '...' } } or { id: '...' } depending on version
     const emailId = result?.data?.id || result?.id;
-    
+
     if (emailId) {
-      console.log("✅ Email sent via Resend. ID:", emailId);
-      console.log("[EMAIL] Full response:", JSON.stringify(result, null, 2));
+      console.log("✅ Quote email sent. ID:", emailId);
       return { success: true, id: emailId };
     } else {
-      console.warn("⚠️ Email response received but no ID found. Full response:", JSON.stringify(result, null, 2));
-      // Still return success if no error was thrown
-      return { success: true, id: null, warning: "Email sent but no ID returned" };
+      console.warn("⚠️ Email sent but no ID:", JSON.stringify(result));
+      return { success: true, id: null, warning: "No ID returned" };
     }
-
   } catch (error) {
-    console.error("❌ Email sending failed:", error);
-    console.error("[EMAIL] Error details:", {
-      message: error.message,
-      status: error.status,
-      response: error.response?.data || error.response,
-      stack: error.stack
-    });
+    console.error("❌ Email failed:", error.message);
+    console.error("[EMAIL] Details:", { status: error.status, response: error.response?.data || error.response });
     throw error;
   }
 }
 
-/* =========================
+/* ==========================================================
    CONTACT FORM EMAIL
-========================= */
+========================================================== */
+
 function generateContactEmailHTML(data) {
-  const name = escapeHtml(data.name || 'Anonymous');
-  const email = escapeHtml(data.email || 'Not provided');
-  const interest = escapeHtml(data.interest || 'Not specified');
-  const phone = data.phone ? escapeHtml(data.phone) : null;
-  const address = data.address ? escapeHtml(data.address) : null;
-  const postCode = data.postCode ? escapeHtml(data.postCode) : null;
-  const message = escapeHtml(data.message || '');
+  const name = esc(data.name || 'Anonymous');
+  const email = esc(data.email || 'Not provided');
+  const interest = esc(data.interest || 'Not specified');
+  const phone = data.phone ? esc(data.phone) : null;
+  const address = data.address ? esc(data.address) : null;
+  const postCode = data.postCode ? esc(data.postCode) : null;
+  const message = esc(data.message || '');
   const submittedAt = data.submittedAt || new Date().toISOString();
 
-  // Format date
   const date = new Date(submittedAt);
   const formattedDate = date.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
   }).replace(',', '');
 
-  // Interest badge colors
   const interestColors = {
-    embroidery: '#7c3aed',
-    printing: '#2563eb',
-    workwear: '#059669',
-    uniforms: '#dc2626',
-    promotional: '#d97706',
-    other: '#6b7280'
+    embroidery: '#7c3aed', printing: '#2563eb', workwear: '#059669',
+    uniforms: '#dc2626', promotional: '#d97706', other: '#6b7280'
   };
   const badgeColor = interestColors[data.interest?.toLowerCase()] || interestColors.other;
 
-  return `
-  <html>
-  <head>
-    <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; margin: 0; padding: 0; }
-      .container { max-width: 600px; margin: 0 auto; }
-      .header { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
-      .header h1 { margin: 0; font-size: 24px; }
-      .header p { margin: 10px 0 0; opacity: 0.9; }
-      .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
-      .section { margin-bottom: 25px; }
-      .section-title { font-size: 14px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
-      .info-row { display: flex; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
-      .info-row:last-child { border-bottom: none; }
-      .info-label { font-weight: 600; color: #374151; width: 120px; flex-shrink: 0; }
-      .info-value { color: #111827; }
-      .interest-badge { display: inline-block; background: ${badgeColor}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
-      .message-box { background: #f9fafb; border-left: 4px solid #7c3aed; padding: 20px; margin-top: 10px; border-radius: 0 8px 8px 0; }
-      .message-text { white-space: pre-wrap; color: #374151; margin: 0; }
-      .footer { background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none; }
-      .footer p { margin: 0; color: #6b7280; font-size: 12px; }
-      .reply-btn { display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 15px; }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>📬 New Contact Form Submission</h1>
-        <p>Someone has reached out through the website</p>
+  return `<html><head></head><body style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;margin:0;padding:0;">
+  <div style="max-width:600px;margin:0 auto;">
+    <div style="background:linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%);color:white;padding:30px;border-radius:8px 8px 0 0;">
+      <h1 style="margin:0;font-size:24px;">&#128236; New Contact Form Submission</h1>
+      <p style="margin:10px 0 0;opacity:0.9;">Someone has reached out through the website</p>
+    </div>
+    <div style="background:#ffffff;padding:30px;border:1px solid #e5e7eb;">
+      <div style="margin-bottom:25px;">
+        <div style="font-size:14px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border-bottom:2px solid #e5e7eb;padding-bottom:8px;">&#128100; Contact Information</div>
+        <div style="padding:10px 0;border-bottom:1px solid #f3f4f6;"><span style="font-weight:600;color:#374151;display:inline-block;width:120px;">Name:</span><strong>${name}</strong></div>
+        <div style="padding:10px 0;border-bottom:1px solid #f3f4f6;"><span style="font-weight:600;color:#374151;display:inline-block;width:120px;">Email:</span><a href="mailto:${email}" style="color:#7c3aed;">${email}</a></div>
+        ${phone ? `<div style="padding:10px 0;border-bottom:1px solid #f3f4f6;"><span style="font-weight:600;color:#374151;display:inline-block;width:120px;">Phone:</span><a href="tel:${phone}" style="color:#7c3aed;">${phone}</a></div>` : ''}
+        <div style="padding:10px 0;border-bottom:1px solid #f3f4f6;"><span style="font-weight:600;color:#374151;display:inline-block;width:120px;">Interest:</span><span style="display:inline-block;background:${badgeColor};color:white;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;">${interest}</span></div>
+        ${address || postCode ? `<div style="padding:10px 0;"><span style="font-weight:600;color:#374151;display:inline-block;width:120px;">Location:</span>${[address, postCode].filter(Boolean).join(', ')}</div>` : ''}
       </div>
-
-      <div class="content">
-        <div class="section">
-          <div class="section-title">👤 Contact Information</div>
-          <div class="info-row">
-            <span class="info-label">Name:</span>
-            <span class="info-value"><strong>${name}</strong></span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Email:</span>
-            <span class="info-value"><a href="mailto:${email}" style="color: #7c3aed;">${email}</a></span>
-          </div>
-          ${phone ? `
-          <div class="info-row">
-            <span class="info-label">Phone:</span>
-            <span class="info-value"><a href="tel:${phone}" style="color: #7c3aed;">${phone}</a></span>
-          </div>` : ''}
-          <div class="info-row">
-            <span class="info-label">Interest:</span>
-            <span class="info-value"><span class="interest-badge">${interest}</span></span>
-          </div>
-          ${address || postCode ? `
-          <div class="info-row">
-            <span class="info-label">Location:</span>
-            <span class="info-value">${[address, postCode].filter(Boolean).join(', ')}</span>
-          </div>` : ''}
-        </div>
-
-        <div class="section">
-          <div class="section-title">💬 Message</div>
-          <div class="message-box">
-            <p class="message-text">${message}</p>
-          </div>
-        </div>
-
-        <div class="section" style="text-align: center; margin-bottom: 0;">
-          <a href="mailto:${email}?subject=Re: Your inquiry about ${interest}" class="reply-btn">Reply to ${name.split(' ')[0]}</a>
+      <div style="margin-bottom:25px;">
+        <div style="font-size:14px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border-bottom:2px solid #e5e7eb;padding-bottom:8px;">&#128172; Message</div>
+        <div style="background:#f9fafb;border-left:4px solid #7c3aed;padding:20px;border-radius:0 8px 8px 0;">
+          <p style="white-space:pre-wrap;color:#374151;margin:0;">${message}</p>
         </div>
       </div>
-
-      <div class="footer">
-        <p>Submitted on ${formattedDate}</p>
-        <p style="margin-top: 5px;">This message was sent from the BrandedUK contact form</p>
+      <div style="text-align:center;">
+        <a href="mailto:${email}?subject=Re: Your inquiry about ${interest}" style="display:inline-block;background:#7c3aed;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">Reply to ${name.split(' ')[0]}</a>
       </div>
     </div>
-  </body>
-  </html>
-  `;
+    <div style="background:#f3f4f6;padding:20px;text-align:center;border-radius:0 0 8px 8px;border:1px solid #e5e7eb;border-top:none;">
+      <p style="margin:0;color:#6b7280;font-size:12px;">Submitted on ${formattedDate}</p>
+      <p style="margin:5px 0 0;color:#6b7280;font-size:12px;">This message was sent from the BrandedUK contact form</p>
+    </div>
+  </div>
+</body></html>`;
 }
 
 async function sendContactEmail(data) {
   try {
     const html = generateContactEmailHTML(data);
 
-    console.log(html);
-    
-
-    console.log(`[EMAIL] Attempting to send contact email to: ${process.env.EMAIL_TO}`);
-    console.log(`[EMAIL] From: ${process.env.EMAIL_FROM}`);
+    console.log(`[EMAIL] Sending contact email to: ${process.env.EMAIL_TO}`);
 
     const result = await resend.emails.send({
       from: process.env.EMAIL_FROM,
@@ -478,79 +351,31 @@ async function sendContactEmail(data) {
       html,
     });
 
-    console.log("Result" , result);
-    
-
-    // Resend API returns { data: { id: '...' } } or { id: '...' } depending on version
     const emailId = result?.data?.id || result?.id;
 
-    console.log('Email Id', emailId);
-    
-    
     if (emailId) {
-      console.log("✅ Contact email sent via Resend. ID:", emailId);
-      console.log("[EMAIL] Full response:", JSON.stringify(result, null, 2));
+      console.log("✅ Contact email sent. ID:", emailId);
       return { success: true, id: emailId };
     } else {
-      console.warn("⚠️ Email response received but no ID found. Full response:", JSON.stringify(result, null, 2));
-      // Still return success if no error was thrown
-      return { success: true, id: null, warning: "Email sent but no ID returned" };
+      console.warn("⚠️ Contact email sent but no ID:", JSON.stringify(result));
+      return { success: true, id: null, warning: "No ID returned" };
     }
-
   } catch (error) {
-    console.error("❌ Contact email sending failed:", error);
-    console.error("[EMAIL] Error details:", {
-      message: error.message,
-      status: error.status,
-      response: error.response?.data || error.response,
-      stack: error.stack
-    });
+    console.error("❌ Contact email failed:", error.message);
+    console.error("[EMAIL] Details:", { status: error.status, response: error.response?.data || error.response });
     throw error;
   }
 }
 
-/* =========================
-   QUOTE EMAIL WITH ATTACHMENTS
-========================= */
-function generateQuoteWithLogosEmailHTML(data, logoUrls = {}) {
-  // Use the existing quote HTML generator
-  let html = generateQuoteEmailHTML(data);
-  
-  // If there are logo URLs, add a section for them
-  if (Object.keys(logoUrls).length > 0) {
-    const logosSection = `
-    <div class="section">
-      <h2>🖼️ Uploaded Logos</h2>
-      <table>
-        ${Object.entries(logoUrls).map(([position, url]) => `
-          <tr>
-            <td class="label">${escapeHtml(position.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))}:</td>
-            <td class="value">
-              <a href="${escapeHtml(url)}" target="_blank" style="color: #7c3aed;">View Logo</a>
-              ${url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? `<br><img src="${escapeHtml(url)}" alt="Logo" style="max-width: 150px; max-height: 100px; margin-top: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">` : ''}
-            </td>
-          </tr>
-        `).join('')}
-      </table>
-    </div>
-    `;
-    
-    // Insert logos section before the request date section
-    html = html.replace(
-      /<div class="section">\s*<h2>📅 Request Date<\/h2>/,
-      `${logosSection}\n    <div class="section">\n      <h2>📅 Request Date</h2>`
-    );
-  }
-  
-  return html;
-}
+/* ==========================================================
+   QUOTE EMAIL WITH FILE ATTACHMENTS (multer uploads)
+========================================================== */
 
-async function sendQuoteEmailWithAttachments(data, attachments = [], logoUrls = {}) {
+async function sendQuoteEmailWithAttachments(data, fileAttachments = [], logoUrls = {}) {
   try {
-    const html = generateQuoteWithLogosEmailHTML(data, logoUrls);
+    const html = generateQuoteEmailHTML(data);
 
-    console.log(`[EMAIL] Attempting to send quote email with ${attachments.length} attachment(s) to: ${process.env.EMAIL_TO}`);
-    console.log(`[EMAIL] From: ${process.env.EMAIL_FROM}`);
+    console.log(`[EMAIL] Sending quote email with ${fileAttachments.length} file attachment(s)`);
 
     const emailOptions = {
       from: process.env.EMAIL_FROM,
@@ -560,39 +385,29 @@ async function sendQuoteEmailWithAttachments(data, attachments = [], logoUrls = 
       html,
     };
 
-    // Add attachments if provided (Resend supports attachments)
-    if (attachments.length > 0) {
-      emailOptions.attachments = attachments.map(att => ({
-        filename: att.filename,
-        content: att.content, // Buffer or base64 string
-      }));
+    // Combine file attachments + base64 logo attachments
+    const base64Attachments = extractLogoAttachments(data.customizations || []);
+    const allAttachments = [
+      ...fileAttachments.map(att => ({ filename: att.filename, content: att.content })),
+      ...base64Attachments,
+    ];
+
+    if (allAttachments.length > 0) {
+      emailOptions.attachments = allAttachments;
     }
 
     const result = await resend.emails.send(emailOptions);
-
-    console.log(result);
-    
-
-    // Resend API returns { data: { id: '...' } } or { id: '...' } depending on version
     const emailId = result?.data?.id || result?.id;
-    
+
     if (emailId) {
-      console.log("✅ Quote email with attachments sent via Resend. ID:", emailId);
-      console.log("[EMAIL] Full response:", JSON.stringify(result, null, 2));
+      console.log("✅ Quote email with attachments sent. ID:", emailId);
       return { success: true, id: emailId };
     } else {
-      console.warn("⚠️ Email response received but no ID found. Full response:", JSON.stringify(result, null, 2));
-      return { success: true, id: null, warning: "Email sent but no ID returned" };
+      console.warn("⚠️ Email sent but no ID:", JSON.stringify(result));
+      return { success: true, id: null, warning: "No ID returned" };
     }
-
   } catch (error) {
-    console.error("❌ Quote email with attachments sending failed:", error);
-    console.error("[EMAIL] Error details:", {
-      message: error.message,
-      status: error.status,
-      response: error.response?.data || error.response,
-      stack: error.stack
-    });
+    console.error("❌ Quote email with attachments failed:", error.message);
     throw error;
   }
 }
