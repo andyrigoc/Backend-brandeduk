@@ -13,6 +13,7 @@ const quotesRoutes = require('./routes/quotes');
 const contactRoutes = require('./routes/contact');
 const pricingRulesRoutes = require('./routes/pricing-rules');
 const productOrderRoutes = require('./routes/product-order');
+const adminRoutes = require('./routes/admin');
 
 // Load Swagger documentation
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
@@ -106,6 +107,7 @@ app.use('/api/quotes', quotesRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/pricing-rules', pricingRulesRoutes);
 app.use('/api/product-order', productOrderRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
