@@ -12,17 +12,17 @@ const DEFAULT_MARKUP_CONFIG = {
     mode: 'tiered',
     fixedPercent: 80,
     tiers: [
-        { from: 0.01, to: 1.99, percent: 200 },
-        { from: 2.00, to: 2.99, percent: 80 },
-        { from: 3.00, to: 4.99, percent: 150 },
-        { from: 5.00, to: 9.99, percent: 138 },
-        { from: 10.00, to: 14.99, percent: 132 },
-        { from: 15.00, to: 24.99, percent: 90 },
-        { from: 25.00, to: 29.99, percent: 105.5 },
-        { from: 30.00, to: 34.99, percent: 110.3 },
-        { from: 35.00, to: 39.99, percent: 90.8 },
-        { from: 40.00, to: 44.99, percent: 85.7 },
-        { from: 45.00, to: null, percent: 60.8 }
+        { from: 0.01, to: 1.99, percent: 198.2 },
+        { from: 2.00, to: 2.99, percent: 102.2 },
+        { from: 3.00, to: 4.99, percent: 147.7 },
+        { from: 5.00, to: 9.99, percent: 135.5 },
+        { from: 10.00, to: 14.99, percent: 129.5 },
+        { from: 15.00, to: 24.99, percent: 89.0 },
+        { from: 25.00, to: 29.99, percent: 102.7 },
+        { from: 30.00, to: 34.99, percent: 107.5 },
+        { from: 35.00, to: 39.99, percent: 87.8 },
+        { from: 40.00, to: 44.99, percent: 82.7 },
+        { from: 45.00, to: null, percent: 56.5 }
     ]
 };
 
